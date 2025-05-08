@@ -1,0 +1,90 @@
+<!-- Enhanced Fencing Calculator Embed Code -->
+<div id="fencing-calculator-container" style="width: 100%; margin: 0 auto; position: relative;">
+  <iframe 
+    id="fencing-calculator-frame"
+    src="https://fencing-form1.vercel.app/" 
+    width="100%" 
+    height="1200px" 
+    style="border: none; overflow: hidden; width: 100%; min-width: 100%; transition: height 0.3s ease;" 
+    scrolling="no"
+    title="Fencing Cost Calculator"
+    loading="lazy"
+    allow="clipboard-write; payment; camera; microphone; autoplay; encrypted-media; fullscreen"
+  ></iframe>
+  <div id="fencing-calculator-loading" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.8); display: flex; justify-content: center; align-items: center; z-index: 1;">
+    <div style="text-align: center;">
+      <div style="border: 5px solid #f3f3f3; border-top: 5px solid #3498db; border-radius: 50%; width: 50px; height: 50px; animation: spin 2s linear infinite; margin: 0 auto;"></div>
+      <p style="margin-top: 10px; font-family: Arial, sans-serif;">Loading Calculator...</p>
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+
+<script>
+  // Enhanced responsive iframe handler
+  (function() {
+    const container = document.getElementById('fencing-calculator-container');
+    const iframe = document.getElementById('fencing-calculator-frame');
+    const loading = document.getElementById('fencing-calculator-loading');
+    
+    // Hide loading screen when iframe is loaded
+    iframe.addEventListener('load', function() {
+      loading.style.display = 'none';
+    });
+    
+    // Handle messages from the iframe
+    window.addEventListener('message', function(event) {
+      // Verify the origin for security (update with your actual domain)
+      if (event.origin !== 'https://fencing-form1.vercel.app') return;
+      
+      // Handle height adjustments from the calculator
+      if (event.data && event.data.type === 'resize' && event.data.height) {
+        // Add padding to ensure no content is cut off
+        const padding = window.innerWidth < 768 ? 100 : 50;
+        iframe.style.height = (event.data.height + padding) + 'px';
+      }
+      
+      // Handle form submission success
+      if (event.data && event.data.type === 'formSubmitted' && event.data.success) {
+        console.log('Quote form submitted successfully!');
+        // You can add custom code here to show a success message or redirect
+      }
+      
+      // Handle modal state changes
+      if (event.data && event.data.type === 'modalStateChanged') {
+        if (event.data.isOpen) {
+          // If a modal is open, ensure enough height
+          const modalHeight = window.innerWidth < 768 ? 800 : 700;
+          iframe.style.height = (modalHeight + 100) + 'px';
+        }
+      }
+    });
+    
+    // Handle responsive resizing
+    function adjustIframeHeight() {
+      const width = container.offsetWidth;
+      
+      // Adjust height based on width for better mobile experience
+      if (width < 768) {
+        iframe.style.height = '1600px'; // Taller on mobile
+      } else if (width < 1024) {
+        iframe.style.height = '1400px'; // Medium height on tablets
+      } else {
+        iframe.style.height = '1200px'; // Default height on desktop
+      }
+    }
+    
+    // Run on load and resize
+    window.addEventListener('load', adjustIframeHeight);
+    window.addEventListener('resize', adjustIframeHeight);
+    
+    // Retry height adjustment after a delay to ensure content is loaded
+    setTimeout(adjustIframeHeight, 1000);
+  })();
+</script>
