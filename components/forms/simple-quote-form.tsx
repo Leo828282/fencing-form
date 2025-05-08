@@ -499,19 +499,19 @@ export default function SimpleQuoteForm({
                         <tr>
                           <th
                             scope="col"
-                            className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-[#cccccc] uppercase tracking-wider"
+                            className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-[#cccccc] tracking-wider"
                           >
                             Item
                           </th>
                           <th
                             scope="col"
-                            className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium text-[#cccccc] uppercase tracking-wider"
+                            className="px-3 sm:px-6 py-3 text-center text-xs sm:text-sm font-medium text-[#cccccc] tracking-wider"
                           >
                             Quantity
                           </th>
                           <th
                             scope="col"
-                            className="px-3 sm:px-6 py-3 text-right text-xs sm:text-sm font-medium text-[#cccccc] uppercase tracking-wider"
+                            className="px-3 sm:px-6 py-3 text-right text-xs sm:text-sm font-medium text-[#cccccc] tracking-wider"
                           >
                             Price
                           </th>
@@ -523,7 +523,7 @@ export default function SimpleQuoteForm({
                             <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-[#cccccc]">
                               {item.name}
                             </td>
-                            <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-[#B82429]">
+                            <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-[#B82429] text-center">
                               {item.quantity}
                             </td>
                             <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-xs sm:text-sm text-right text-[#cccccc]">
