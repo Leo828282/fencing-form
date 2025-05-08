@@ -100,6 +100,7 @@ export default function SimpleQuoteForm({
     setAddressInput(value)
     setFormData((prev) => ({ ...prev, address: value }))
 
+    // Always update the form data with the typed value
     if (value.length > 3) {
       try {
         const predictions = await getPlacePredictions(value)
@@ -285,6 +286,10 @@ export default function SimpleQuoteForm({
 
     if (!formData.postalCode.trim()) {
       newErrors.postalCode = "Postal code is required"
+    }
+
+    if (!formData.businessName.trim()) {
+      newErrors.businessName = "Business name is required"
     }
 
     setErrors(newErrors)
@@ -657,7 +662,7 @@ export default function SimpleQuoteForm({
                   {/* Business Name */}
                   <div>
                     <label htmlFor="businessName" className="block text-sm mb-2 text-[#cccccc] font-medium">
-                      Business Name
+                      Business Name <span className="text-[#B82429]">*</span>
                     </label>
                     <Input
                       id="businessName"
@@ -668,6 +673,12 @@ export default function SimpleQuoteForm({
                       placeholder="Business Name (optional)"
                       autoComplete="organization"
                     />
+                    {errors.businessName && (
+                      <p className="text-[#B82429] text-xs mt-1 flex items-center">
+                        <span className="w-1 h-3 bg-[#B82429] rounded-full mr-1.5"></span>
+                        {errors.businessName}
+                      </p>
+                    )}
                   </div>
 
                   {/* Address with Google Maps Autocomplete */}
@@ -684,7 +695,7 @@ export default function SimpleQuoteForm({
                         className={`bg-[#252525] border-[#333333] text-white h-14 focus:border-[#B82429] focus:ring-[#B82429] transition-all ${
                           errors.address ? "border-[#B82429]" : isAddressValid ? "border-green-500" : ""
                         } ${isCalculatingDistance ? "pr-10" : ""}`}
-                        placeholder="Start typing your address..."
+                        placeholder="Type your address or select from suggestions..."
                         autoComplete="off"
                       />
                       {isCalculatingDistance && (
@@ -698,6 +709,18 @@ export default function SimpleQuoteForm({
                         </div>
                       )}
                     </div>
+                    <p className="text-xs text-[#999999] mt-1">
+                      Type your address or select from suggestions for accurate delivery calculation
+                    </p>
+                    {!isAddressValid && formData.address.trim().length > 5 && !isCalculatingDistance && (
+                      <button
+                        type="button"
+                        onClick={() => calculateDeliveryFee(formData.address)}
+                        className="mt-2 text-xs flex items-center text-[#B82429] hover:text-[#9e1f23]"
+                      >
+                        <RotateCw className="h-3 w-3 mr-1" /> Calculate delivery for this address
+                      </button>
+                    )}
 
                     {/* Address suggestions dropdown */}
                     {showSuggestions && (
@@ -705,7 +728,7 @@ export default function SimpleQuoteForm({
                         {addressSuggestions.map((suggestion) => (
                           <div
                             key={suggestion.place_id}
-                            className="p-2 hover:bg-[#333333] cursor-pointer"
+                            className="p-2 hover:bg-[#333333] cursor-pointer text-white"
                             onClick={() => handleSelectAddress(suggestion.place_id, suggestion.description)}
                           >
                             {suggestion.description}
