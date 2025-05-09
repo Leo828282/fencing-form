@@ -7,7 +7,6 @@ import {
   X,
   CheckCircle,
   ArrowRight,
-  Fence,
   Footprints,
   Link,
   CornerRightDown,
@@ -16,6 +15,7 @@ import {
   Shield,
   Info,
   Clock,
+  Fence,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

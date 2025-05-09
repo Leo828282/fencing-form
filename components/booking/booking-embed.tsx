@@ -15,6 +15,12 @@ interface BookingEmbedProps {
 export default function BookingEmbed({ onClose, bookingUrl }: BookingEmbedProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isInIframe, setIsInIframe] = useState(false)
+
+  // Check if we're in an iframe
+  useEffect(() => {
+    setIsInIframe(window !== window.parent)
+  }, [])
 
   // Get the booking URL from props or environment variables
   const embedUrl =
@@ -27,21 +33,33 @@ export default function BookingEmbed({ onClose, bookingUrl }: BookingEmbedProps)
     document.body.style.overflow = "hidden"
 
     // Dispatch modal state change event for iframe communication
-    const event = new CustomEvent("modalStateChanged", {
-      detail: { isOpen: true, modalType: "booking" },
-    })
-    document.dispatchEvent(event)
+    if (isInIframe) {
+      window.parent.postMessage(
+        {
+          type: "MODAL_STATE_CHANGED",
+          isOpen: true,
+          modalType: "booking",
+        },
+        "*",
+      )
+    }
 
     return () => {
       document.body.style.overflow = "auto"
 
       // Dispatch modal closed event
-      const closeEvent = new CustomEvent("modalStateChanged", {
-        detail: { isOpen: false, modalType: "booking" },
-      })
-      document.dispatchEvent(closeEvent)
+      if (isInIframe) {
+        window.parent.postMessage(
+          {
+            type: "MODAL_STATE_CHANGED",
+            isOpen: false,
+            modalType: "booking",
+          },
+          "*",
+        )
+      }
     }
-  }, [])
+  }, [isInIframe])
 
   // Handle iframe load event
   const handleIframeLoad = () => {

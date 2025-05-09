@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
-import FencingCalculator from "./calculator/fencing-calculator"
+import { useState, useEffect, useCallback } from "react"
 import SimpleQuoteForm from "./forms/simple-quote-form"
 import BookingEmbed from "./booking/booking-embed"
+import FencingCalculator from "./calculator/fencing-calculator"
 
 export default function FencingCalculatorIntegration() {
   // Initialize with default values to prevent undefined errors
@@ -14,7 +14,6 @@ export default function FencingCalculatorIntegration() {
       { name: "Fencing Clamp", quantity: 5, price: 20, category: "connectors" },
       { name: "Fencing Stay Support", quantity: 1, price: 35, category: "supports" },
       { name: "Fencing Feet (for braces)", quantity: 2, price: 50, category: "feet" },
-      { name: "Delivery Fee", quantity: 1, price: 0, isTBC: true, category: "delivery" },
       { name: "Installation", quantity: 1, price: 0, isTBC: true, category: "services" },
     ],
     totalPrice: 555.5,
@@ -27,6 +26,23 @@ export default function FencingCalculatorIntegration() {
   })
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false)
   const [isBookingRedirectOpen, setIsBookingRedirectOpen] = useState(false)
+  const [isInIframe, setIsInIframe] = useState(false)
+
+  // Check if we're in an iframe
+  useEffect(() => {
+    setIsInIframe(window !== window.parent)
+
+    // Send initial height to parent if in iframe
+    if (window !== window.parent) {
+      window.parent.postMessage(
+        {
+          type: "RESIZE_IFRAME",
+          height: document.body.scrollHeight,
+        },
+        "*",
+      )
+    }
+  }, [])
 
   // Function to format duration for display
   const formatDuration = () => {
@@ -48,20 +64,110 @@ export default function FencingCalculatorIntegration() {
     return price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
   }
 
+  // Handle calculator data update - filter out delivery items
+  // Use useCallback to prevent recreation of this function on every render
+  const handleCalculatorUpdate = useCallback((data) => {
+    // Create a new object with filtered itemsList to avoid mutating the original data
+    const filteredData = {
+      ...data,
+      itemsList: data.itemsList
+        ? data.itemsList.filter(
+            (item) =>
+              !(item.name?.toLowerCase().includes("delivery") || item.category?.toLowerCase().includes("delivery")),
+          )
+        : [],
+    }
+
+    // Only update state if the data has actually changed
+    setCalculatorData((prevData) => {
+      // Simple comparison to avoid unnecessary updates
+      if (JSON.stringify(prevData) === JSON.stringify(filteredData)) {
+        return prevData
+      }
+      return filteredData
+    })
+  }, [])
+
+  // Handle opening quote modal
+  const handleOpenQuoteModal = () => {
+    setIsQuoteModalOpen(true)
+
+    // Notify parent about modal opening if in iframe
+    if (isInIframe) {
+      window.parent.postMessage(
+        {
+          type: "MODAL_STATE_CHANGED",
+          isOpen: true,
+          modalType: "quote",
+        },
+        "*",
+      )
+    }
+  }
+
+  // Handle closing quote modal
+  const handleCloseQuoteModal = () => {
+    setIsQuoteModalOpen(false)
+
+    // Notify parent about modal closing if in iframe
+    if (isInIframe) {
+      window.parent.postMessage(
+        {
+          type: "MODAL_STATE_CHANGED",
+          isOpen: false,
+        },
+        "*",
+      )
+    }
+  }
+
+  // Handle opening booking modal
+  const handleOpenBookingModal = () => {
+    setIsBookingRedirectOpen(true)
+
+    // Notify parent about modal opening if in iframe
+    if (isInIframe) {
+      window.parent.postMessage(
+        {
+          type: "MODAL_STATE_CHANGED",
+          isOpen: true,
+          modalType: "booking",
+        },
+        "*",
+      )
+    }
+  }
+
+  // Handle closing booking modal
+  const handleCloseBookingModal = () => {
+    setIsBookingRedirectOpen(false)
+
+    // Notify parent about modal closing if in iframe
+    if (isInIframe) {
+      window.parent.postMessage(
+        {
+          type: "MODAL_STATE_CHANGED",
+          isOpen: false,
+        },
+        "*",
+      )
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="container mx-auto px-4 py-6 sm:py-8">
         {/* Calculator component */}
         <FencingCalculator
-          onUpdate={setCalculatorData}
-          onQuoteRequest={() => setIsQuoteModalOpen(true)}
-          onBookingRequest={() => setIsBookingRedirectOpen(true)}
+          onUpdate={handleCalculatorUpdate}
+          onQuoteRequest={handleOpenQuoteModal}
+          onBookingRequest={handleOpenBookingModal}
         />
 
         {/* Modals - Only render when open */}
         {isQuoteModalOpen && (
           <SimpleQuoteForm
-            onClose={() => setIsQuoteModalOpen(false)}
+            onClose={handleCloseQuoteModal}
             itemsList={calculatorData.itemsList}
             totalPrice={calculatorData.totalPrice}
             selectedOption={calculatorData.selectedOption}
@@ -75,7 +181,7 @@ export default function FencingCalculatorIntegration() {
           />
         )}
 
-        {isBookingRedirectOpen && <BookingEmbed onClose={() => setIsBookingRedirectOpen(false)} />}
+        {isBookingRedirectOpen && <BookingEmbed onClose={handleCloseBookingModal} />}
       </div>
     </div>
   )

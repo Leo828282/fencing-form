@@ -10,16 +10,19 @@ import {
   HelpCircle,
   Info,
   Clock,
-  Fence,
   Footprints,
   Link,
   CornerRightDown,
   DollarSign,
   Truck,
   Shield,
+  Fence,
 } from "lucide-react"
 import { Poppins } from "next/font/google"
 import { Card } from "@/components/ui/card"
+
+// Add the import for the debug component at the top of the file
+import GoogleMapsDebug from "@/components/debug/google-maps-debug"
 
 // Initialize the Poppins font
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"] })
@@ -1478,6 +1481,8 @@ outline: none;
               )}
             </div>
           </div>
+          {/* Google Maps Debug Tool */}
+          <GoogleMapsDebug />
         </div>
       </div>
     </>

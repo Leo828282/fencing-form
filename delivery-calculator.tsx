@@ -32,16 +32,6 @@ interface DistanceCache {
   [key: string]: CacheEntry
 }
 
-// Declare google as a global property to satisfy Typescript
-declare global {
-  interface Window {
-    google?: any
-    mapsApiLoaded?: boolean
-    mapsApiError?: string
-    initMap?: () => void
-  }
-}
-
 interface DeliveryCalculatorProps {
   onDeliveryFeeCalculated: (fee: number) => void
 }
@@ -182,7 +172,7 @@ export default function DeliveryCalculator({ onDeliveryFeeCalculated }: Delivery
 
       if (result.error) {
         setError(result.error)
-        setUsingFallback(true)
+        setUsingFallback(result.usingFallback || false)
       } else {
         // Add to cache
         addToCache(COMPANY_ADDRESS, customerAddress, result.distance)
@@ -190,6 +180,7 @@ export default function DeliveryCalculator({ onDeliveryFeeCalculated }: Delivery
         setDistance(result.distance)
         setDeliveryFee(result.fee)
         onDeliveryFeeCalculated(result.fee)
+        setUsingFallback(result.usingFallback || false)
       }
     } catch (err) {
       console.error("Error calculating distance:", err)
