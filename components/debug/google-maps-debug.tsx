@@ -85,16 +85,7 @@ export default function GoogleMapsDebug() {
   }, [])
 
   if (!isVisible) {
-    return (
-      <Button
-        onClick={() => setIsVisible(true)}
-        className="fixed bottom-4 right-4 z-50 bg-amber-500 hover:bg-amber-600"
-        size="sm"
-      >
-        <Info className="mr-2 h-4 w-4" />
-        Debug Maps
-      </Button>
-    )
+    return null
   }
 
   return (
