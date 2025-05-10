@@ -1,0 +1,2301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fencing Cost Calculator</title>
+  <!-- Import Inter font directly -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Reset and base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: transparent;
+      color: #333;
+      line-height: 1.5;
+    }
+    
+    /* Container */
+    .calculator-container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      border: 1px solid #e2e2e2;
+    }
+    
+    /* Header */
+    .calculator-header {
+      background: linear-gradient(to right, #b82429, #d42f35);
+      color: white;
+      padding: 1.5rem 1rem;
+      text-align: center;
+    }
+    
+    .calculator-title {
+      font-size: 27px;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    
+    .calculator-subtitle {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+    
+    /* Progress steps */
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 1.5rem;
+      background: #f9f9f9;
+      border-bottom: 1px solid #e2e2e2;
+    }
+    
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .step-circle {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: #e2e2e2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      font-size: 0.8rem;
+      margin-bottom: 0.25rem;
+      transition: all 0.3s ease;
+    }
+    
+    .step-circle.active {
+      background: #b82429;
+      color: white;
+    }
+    
+    .step-circle.completed {
+      background: #b82429;
+      color: white;
+    }
+    
+    .step-line {
+      height: 2px;
+      background: #e2e2e2;
+      width: 4rem;
+      margin-top: 1rem;
+    }
+    
+    .step-line.completed {
+      background: #b82429;
+    }
+    
+    /* Form content */
+    .form-content {
+      padding: 1.5rem;
+    }
+    
+    .form-step {
+      display: none;
+    }
+    
+    .form-step.active {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    /* Form elements */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: #555;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #b82429;
+      box-shadow: 0 0 0 2px rgba(184, 36, 41, 0.1);
+    }
+    
+    .input-group {
+      display: flex;
+      align-items: center;
+    }
+    
+    .input-group .form-input {
+      flex: 1;
+    }
+    
+    .input-icon {
+      position: absolute;
+      left: 0.75rem;
+      color: #999;
+    }
+    
+    .input-with-icon {
+      position: relative;
+    }
+    
+    .input-with-icon .form-input {
+      padding-left: 2.5rem;
+    }
+    
+    /* Grid layout */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    
+    /* Service type buttons */
+    .service-options {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    
+    .service-option {
+      flex: 1;
+    }
+    
+    .service-button {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #ddd;
+      background: white;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .service-button:hover {
+      border-color: #b82429;
+      color: #b82429;
+    }
+    
+    .service-button.active {
+      border-color: #b82429;
+      background: rgba(184, 36, 41, 0.1);
+      color: #b82429;
+    }
+    
+    /* Fencing type grid */
+    .fencing-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    
+    .fencing-option {
+      border: 2px solid #ddd;
+      border-radius: 4px;
+      padding: 0.75rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      height: 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .fencing-option:hover {
+      border-color: rgba(184, 36, 41, 0.5);
+    }
+    
+    .fencing-option.active {
+      border-color: #b82429;
+      background: rgba(184, 36, 41, 0.05);
+      color: #b82429;
+    }
+    
+    .fencing-name {
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    
+    /* Slider */
+    .slider-container {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 0.5rem;
+    }
+    
+    .slider-value-container {
+      display: flex;
+      align-items: center;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 1rem;
+    }
+    
+    .slider-value-container:focus-within {
+      border-color: #b82429;
+      box-shadow: 0 0 0 2px rgba(184, 36, 41, 0.1);
+    }
+    
+    .slider-value {
+      flex: 1;
+      border: none;
+      font-size: 1.25rem;
+      font-weight: 600;
+      text-align: center;
+      width: 100%;
+      background: transparent;
+    }
+    
+    .slider-value:focus {
+      outline: none;
+    }
+    
+    .slider-unit {
+      font-size: 1.125rem;
+      color: #666;
+      margin-left: 0.25rem;
+    }
+    
+    .slider-icon {
+      color: #b82429;
+      margin-right: 0.5rem;
+    }
+    
+    .range-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 10px;
+      border-radius: 5px;
+      background: #e2e2e2;
+      outline: none;
+      margin: 1rem 0;
+    }
+    
+    .range-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #b82429;
+      border: 2px solid white;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      margin-top: -7px;
+      transition: all 0.2s ease;
+    }
+    
+    .range-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    .range-slider::-moz-range-thumb {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #b82429;
+      border: 2px solid white;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+    }
+    
+    .range-slider::-moz-range-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: #666;
+    }
+    
+    .slider-current {
+      color: #b82429;
+      font-weight: 500;
+    }
+    
+    /* Calendar */
+    .calendar-container {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+    
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      cursor: pointer;
+    }
+    
+    .calendar-header:hover {
+      background: #f9f9f9;
+    }
+    
+    .calendar-date {
+      display: flex;
+      align-items: center;
+    }
+    
+    .calendar-icon-container {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: rgba(184, 36, 41, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 0.75rem;
+    }
+    
+    .calendar-icon {
+      color: #b82429;
+    }
+    
+    .calendar-date-text {
+      font-weight: 500;
+    }
+    
+    .calendar-edit {
+      color: #b82429;
+      background: transparent;
+      border: none;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    
+    .calendar-edit:hover {
+      background: rgba(184, 36, 41, 0.1);
+    }
+    
+    .calendar-body {
+      padding: 1rem;
+      border-top: 1px solid #f0f0f0;
+      display: none;
+    }
+    
+    .calendar-body.active {
+      display: block;
+    }
+    
+    /* Duration selector */
+    .duration-container {
+      margin-top: 1rem;
+    }
+    
+    .duration-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .duration-selector {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 1rem;
+      background: white;
+    }
+    
+    .duration-button {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: #333;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .duration-button:hover {
+      background: rgba(184, 36, 41, 0.1);
+      color: #b82429;
+    }
+    
+    .duration-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .duration-value {
+      font-size: 1.75rem;
+      font-weight: 600;
+      width: 4rem;
+      text-align: center;
+      border: none;
+      background: transparent;
+    }
+    
+    .duration-value:focus {
+      outline: none;
+    }
+    
+    .duration-unit-selector {
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      background: white;
+    }
+    
+    /* Date range summary */
+    .date-range {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #f0f0f0;
+    }
+    
+    .date-range-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+    
+    .date-label {
+      color: #666;
+      font-size: 0.75rem;
+    }
+    
+    .date-value {
+      font-weight: 500;
+    }
+    
+    .date-arrow {
+      color: #b82429;
+      align-self: center;
+    }
+    
+    .date-timeline {
+      position: relative;
+      height: 4px;
+      background: rgba(184, 36, 41, 0.1);
+      border-radius: 2px;
+      margin: 0.75rem 0 0.5rem;
+    }
+    
+    .date-timeline-fill {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: rgba(184, 36, 41, 0.3);
+      border-radius: 2px;
+    }
+    
+    .date-marker {
+      position: absolute;
+      top: 50%;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #b82429;
+      transform: translateY(-50%);
+    }
+    
+    .date-marker-start {
+      left: 0;
+    }
+    
+    .date-marker-end {
+      right: 0;
+    }
+    
+    .date-duration {
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #b82429;
+      margin-top: 0.5rem;
+    }
+    
+    /* Info box */
+    .info-box {
+      display: flex;
+      background: #fff5f5;
+      border: 1px solid #ffebeb;
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: #b82429;
+    }
+    
+    .info-icon {
+      margin-right: 0.5rem;
+      margin-top: 0.125rem;
+      flex-shrink: 0;
+    }
+    
+    /* Summary box */
+    .summary-box {
+      background: #f9f9f9;
+      border: 1px solid #e2e2e2;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .summary-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.75rem;
+      color: #555;
+    }
+    
+    .summary-list {
+      list-style: none;
+    }
+    
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+    
+    .summary-label {
+      color: #666;
+    }
+    
+    .summary-value {
+      font-weight: 500;
+    }
+    
+    /* Confirmation screen */
+    .confirmation {
+      text-align: center;
+      padding: 1rem 0;
+    }
+    
+    .confirmation-icon {
+      width: 4rem;
+      height: 4rem;
+      background: rgba(184, 36, 41, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+    }
+    
+    .confirmation-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    
+    .confirmation-details {
+      width: 100%;
+    }
+    
+    .confirmation-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .confirmation-label {
+      color: #666;
+    }
+    
+    .confirmation-value {
+      font-weight: 500;
+    }
+    
+    .confirmation-message {
+      margin: 1rem 0 1.5rem;
+      color: #555;
+    }
+    
+    .confirmation-next {
+      border-top: 1px solid #e2e2e2;
+      padding-top: 1rem;
+      margin-top: 0.5rem;
+    }
+    
+    .confirmation-next-title {
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+    
+    .confirmation-steps {
+      list-style-position: inside;
+      text-align: left;
+      color: #555;
+    }
+    
+    .confirmation-step {
+      margin-bottom: 0.5rem;
+    }
+    
+    /* Footer */
+    .form-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      background: #f9f9f9;
+      border-top: 1px solid #e2e2e2;
+    }
+    
+    .footer-left {
+      display: flex;
+      align-items: center;
+    }
+    
+    .back-button {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #b82429;
+      background: transparent;
+      color: #b82429;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .back-button:hover {
+      background: rgba(184, 36, 41, 0.05);
+    }
+    
+    .back-icon {
+      margin-right: 0.25rem;
+    }
+    
+    .save-button {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #ddd;
+      background: transparent;
+      color: #666;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin-left: 0.5rem;
+      transition: all 0.2s;
+    }
+    
+    .save-button:hover {
+      background: #f0f0f0;
+    }
+    
+    .save-icon {
+      margin-right: 0.25rem;
+    }
+    
+    .next-button {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      border: none;
+      background: #b82429;
+      color: white;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(184, 36, 41, 0.2);
+      transition: all 0.2s;
+    }
+    
+    .next-button:hover {
+      background: #a01f24;
+    }
+    
+    .next-button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+    
+    .next-icon {
+      margin-left: 0.25rem;
+    }
+    
+    /* Confirmation buttons */
+    .confirmation-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      width: 100%;
+    }
+    
+    .home-button {
+      padding: 0.75rem;
+      border: none;
+      background: #b82429;
+      color: white;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .home-button:hover {
+      background: #a01f24;
+    }
+    
+    .calculate-button {
+      padding: 0.75rem;
+      border: 1px solid #b82429;
+      background: transparent;
+      color: #b82429;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .calculate-button:hover {
+      background: rgba(184, 36, 41, 0.05);
+    }
+    
+    /* Utilities */
+    .hidden {
+      display: none;
+    }
+    
+    .icon {
+      width: 1.25rem;
+      height: 1.25rem;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    
+    .icon-sm {
+      width: 1rem;
+      height: 1rem;
+    }
+    
+    .icon-lg {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+    
+    .spinner {
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Calendar styles */
+    .calendar {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .calendar-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .calendar-month {
+      font-weight: 500;
+    }
+    
+    .calendar-nav-button {
+      background: transparent;
+      border: none;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    
+    .calendar-nav-button:hover {
+      background: #f0f0f0;
+    }
+    
+    .calendar th {
+      font-weight: 500;
+      font-size: 0.75rem;
+      color: #666;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    
+    .calendar td {
+      padding: 0;
+      text-align: center;
+    }
+    
+    .calendar-day {
+      width: 2.5rem;
+      height: 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      margin: 0 auto;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .calendar-day:hover:not(.disabled):not(.selected) {
+      background: #f0f0f0;
+    }
+    
+    .calendar-day.today {
+      font-weight: 600;
+      border: 1px solid #ddd;
+    }
+    
+    .calendar-day.selected {
+      background: #b82429;
+      color: white;
+    }
+    
+    .calendar-day.in-range {
+      background: rgba(184, 36, 41, 0.1);
+      color: #b82429;
+      border-radius: 0;
+    }
+    
+    .calendar-day.range-start {
+      border-top-left-radius: 50%;
+      border-bottom-left-radius: 50%;
+    }
+    
+    .calendar-day.range-end {
+      border-top-right-radius: 50%;
+      border-bottom-right-radius: 50%;
+    }
+    
+    .calendar-day.disabled {
+      color: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .calendar-day.other-month {
+      color: #aaa;
+    }
+
+    /* Textarea */
+    .form-textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 1rem;
+      min-height: 150px;
+      resize: vertical;
+      transition: border-color 0.3s;
+    }
+    
+    .form-textarea:focus {
+      outline: none;
+      border-color: #b82429;
+      box-shadow: 0 0 0 2px rgba(184, 36, 41, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator-container">
+    <!-- Header -->
+    <div class="calculator-header">
+      <h1 class="calculator-title">Request Your Fencing Quote</h1>
+      <p class="calculator-subtitle">Get the right fencing solution for your project today!</p>
+    </div>
+    
+    <!-- Progress steps -->
+    <div class="progress-steps">
+      <div class="step">
+        <div class="step-circle active" id="step-circle-1">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+      </div>
+      <div class="step-line" id="step-line-1-2"></div>
+      <div class="step">
+        <div class="step-circle" id="step-circle-2">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="step-line" id="step-line-2-3"></div>
+      <div class="step">
+        <div class="step-circle" id="step-circle-3">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </div>
+      </div>
+      <div class="step-line" id="step-line-3-4"></div>
+      <div class="step">
+        <div class="step-circle" id="step-circle-4">
+          <svg class="icon icon-sm" viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Form content -->
+    <div class="form-content">
+      <!-- Step 1: Contact Information -->
+      <div class="form-step active" id="step-1">
+        <div class="form-header">
+          <div class="form-icon">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div class="form-description">
+            Please provide your contact information so we can get back to you.
+          </div>
+        </div>
+        
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="firstName" class="form-label">First Name <span style="color: #b82429;">*</span></label>
+            <input type="text" id="firstName" class="form-input" placeholder="John" required>
+          </div>
+          <div class="form-group">
+            <label for="lastName" class="form-label">Last Name <span style="color: #b82429;">*</span></label>
+            <input type="text" id="lastName" class="form-input" placeholder="Doe" required>
+          </div>
+        </div>
+        
+        <div class="grid-2">
+          <div class="form-group">
+            <label for="email" class="form-label">Email Address <span style="color: #b82429;">*</span></label>
+            <div class="input-with-icon">
+              <svg class="icon input-icon" viewBox="0 0 24 24">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              <input type="email" id="email" class="form-input" placeholder="you@example.com" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="phone" class="form-label">Phone Number <span style="color: #b82429;">*</span></label>
+            <div class="input-with-icon">
+              <svg class="icon input-icon" viewBox="0 0 24 24">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              <input type="tel" id="phone" class="form-input" placeholder="+61 XXX XXX XXX" required>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="businessName" class="form-label">Business Name <span style="color: #b82429;">*</span></label>
+          <input type="text" id="businessName" class="form-input" placeholder="Your Company" required>
+        </div>
+      </div>
+      
+      <!-- Step 2: Fencing Details -->
+      <div class="form-step" id="step-2">
+        <div class="form-header">
+          <div class="form-icon">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+          </div>
+          <div class="form-description">
+            Tell us about your fencing requirements.
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Service Type <span style="color: #b82429;">*</span></label>
+          <div class="service-options">
+            <div class="service-option">
+              <button type="button" class="service-button" id="hire-button">Hire</button>
+            </div>
+            <div class="service-option">
+              <button type="button" class="service-button" id="purchase-button">Purchase</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Fencing Type <span style="color: #b82429;">*</span></label>
+          <div class="fencing-options">
+            <div class="fencing-option" data-type="standard">
+              <span class="fencing-name">Standard Construction</span>
+            </div>
+            <div class="fencing-option" data-type="braced">
+              <span class="fencing-name">Standard Braced</span>
+            </div>
+            <div class="fencing-option" data-type="pool">
+              <span class="fencing-name">Pool Fencing</span>
+            </div>
+            <div class="fencing-option" data-type="crowd">
+              <span class="fencing-name">Crowd Control</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="meters">
+            <svg class="icon icon-sm" style="color: #b82429;" viewBox="0 0 24 24">
+              <path d="M19 17h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H13a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h2"></path>
+              <path d="M1 7h10"></path>
+              <path d="M5 1v12"></path>
+            </svg>
+            Meters of Linear Fencing Required
+          </label>
+          <div class="slider-container">
+            <div class="slider-value-container">
+              <svg class="icon slider-icon" viewBox="0 0 24 24">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              <input type="number" id="meters-value" class="slider-value" value="520" min="0" max="800">
+              <span class="slider-unit">M</span>
+            </div>
+            
+            <input type="range" id="meters-slider" class="range-slider" min="0" max="800" value="520">
+            
+            <div class="slider-labels">
+              <span>0m</span>
+              <span class="slider-current">520m</span>
+              <span>800m</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Step 3: Hire Details -->
+      <div class="form-step" id="step-3">
+        <div class="form-header">
+          <div class="form-icon">
+            <svg class="icon" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <div class="form-description">
+            Please provide details about your hire requirements.
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="siteLocation" class="form-label">
+            <svg class="icon icon-sm" style="color: #b82429;" viewBox="0 0 24 24">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            Site Location / Address <span style="color: #b82429;">*</span>
+          </label>
+          <input type="text" id="siteLocation" class="form-input" placeholder="Enter site address" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">
+            <svg class="icon icon-sm" style="color: #b82429;" viewBox="0 0 24 24">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            Select Start Date <span style="color: #b82429;">*</span>
+          </label>
+          
+          <div class="calendar-container">
+            <div class="calendar-header" id="calendar-header">
+              <div class="calendar-date" id="selected-date-display">
+                <div class="calendar-icon-container">
+                  <svg class="icon icon-sm calendar-icon" viewBox="0 0 24 24">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </div>
+                <span class="calendar-date-text">Pick a date</span>
+              </div>
+              <button class="calendar-edit" id="calendar-toggle">
+                <svg class="icon icon-sm" viewBox="0 0 24 24">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="calendar-body" id="calendar-body">
+              <div id="calendar-container"></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="duration-container">
+          <div class="duration-header">
+            <label class="form-label">
+              <svg class="icon icon-sm" style="color: #b82429;" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              Duration
+            </label>
+            
+            <select id="duration-unit" class="duration-unit-selector">
+              <option value="days">Days</option>
+              <option value="weeks" selected>Weeks</option>
+              <option value="months">Months</option>
+            </select>
+          </div>
+          
+          <div class="duration-selector">
+            <button type="button" class="duration-button" id="decrease-duration">
+              <svg class="icon" viewBox="0 0 24 24">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            
+            <input type="text" id="duration-value" class="duration-value" value="2">
+            
+            <button type="button" class="duration-button" id="increase-duration">
+              <svg class="icon" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+          </div>
+          
+          <div class="date-range" id="date-range-container" style="display: none;">
+            <div class="date-range-header">
+              <div>
+                <div class="date-label">Start Date</div>
+                <div class="date-value" id="start-date-display"></div>
+              </div>
+              
+              <svg class="icon icon-sm date-arrow" viewBox="0 0 24 24">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+              
+              <div>
+                <div class="date-label">End Date</div>
+                <div class="date-value" id="end-date-display"></div>
+              </div>
+            </div>
+            
+            <div class="date-timeline">
+              <div class="date-timeline-fill"></div>
+              <div class="date-marker date-marker-start"></div>
+              <div class="date-marker date-marker-end"></div>
+            </div>
+            
+            <div class="date-duration" id="duration-display">2 weeks</div>
+          </div>
+        </div>
+        
+        <div class="info-box">
+          <svg class="icon icon-sm info-icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <p>
+            Select a start date on the calendar and set your desired duration. The highlighted area shows your hire period.
+          </p>
+        </div>
+      </div>
+      
+      <!-- Step 4: Additional Information -->
+      <div class="form-step" id="step-4">
+        <div class="form-header">
+          <div class="form-icon">
+            <svg class="icon" viewBox="0 0 24 24">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>
+          <div class="form-description">
+            Please provide any additional information that might help us understand your needs better.
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="notes" class="form-label">Additional Notes</label>
+          <textarea id="notes" class="form-textarea" placeholder="Enter any additional requirements or notes"></textarea>
+        </div>
+        
+        <div class="summary-box">
+          <h3 class="summary-title">Summary</h3>
+          <ul class="summary-list" id="summary-list">
+            <!-- Will be populated by JavaScript -->
+          </ul>
+        </div>
+      </div>
+      
+      <!-- Confirmation Screen -->
+      <div class="form-step" id="confirmation-screen">
+        <div class="confirmation">
+          <div class="confirmation-icon">
+            <svg class="icon icon-lg" style="color: #b82429;" viewBox="0 0 24 24">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          
+          <h2 class="confirmation-title">Thank You</h2>
+          
+          <div class="confirmation-details">
+            <div class="confirmation-row">
+              <span class="confirmation-label">Customer ID:</span>
+              <span class="confirmation-value" id="customer-id">883930</span>
+            </div>
+            
+            <div class="confirmation-row">
+              <span class="confirmation-label">Submission Date:</span>
+              <span class="confirmation-value" id="submission-date"></span>
+            </div>
+          </div>
+          
+          <div class="confirmation-message">
+            Our team will review your submission and contact you shortly to discuss the next steps.
+          </div>
+          
+          <div class="confirmation-next">
+            <h3 class="confirmation-next-title">What happens next?</h3>
+            <ol class="confirmation-steps">
+              <li class="confirmation-step">Our team will review your submission details</li>
+              <li class="confirmation-step">We'll contact you to verify information and discuss terms</li>
+            </ol>
+          </div>
+          
+          <div class="confirmation-buttons">
+            <button type="button" class="home-button" id="return-home-button">Return to Home</button>
+            <button type="button" class="calculate-button" id="calculate-costs-button">Calculate Costs</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="form-footer">
+      <div class="footer-left">
+        <button type="button" class="back-button" id="back-button" style="display: none;">
+          <svg class="icon icon-sm back-icon" viewBox="0 0 24 24">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          Back
+        </button>
+        
+        <button type="button" class="save-button" id="save-button">
+          <svg class="icon icon-sm save-icon" viewBox="0 0 24 24">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          Save Progress
+        </button>
+      </div>
+      
+      <button type="button" class="next-button" id="next-button">
+        Next
+        <svg class="icon icon-sm next-icon" viewBox="0 0 24 24">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // GoHighLevel API credentials
+      const GHL_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2NhdGlvbl9pZCI6Iks2SVh0ckJ5VHBSZnVXVHJqaXpOIiwidmVyc2lvbiI6MSwiaWF0IjoxNzQzNzY1MjQ4OTkxLCJzdWIiOiJaN0l3bE51a0JDTlpoZUtOM0VmcyJ9.JKDShFGROqQqHc29sLFOOXnYhLsQHWGxOUi3Z1I8N_Y";
+      const GHL_LOCATION_ID = "K6IXtrByTpRfuWTrjizN";
+      
+      // State
+      const state = {
+        step: 1,
+        totalSteps: 4,
+        serviceType: null,
+        fencingType: null,
+        meters: 520,
+        formData: {
+          firstName: '',
+          lastName: '',
+          businessName: '',
+          email: '',
+          phone: '',
+          notes: '',
+          siteLocation: '',
+          startDate: '',
+          duration: '2',
+          durationUnit: 'weeks',
+        },
+        selectedDate: null,
+        endDate: null,
+        isCalendarExpanded: false,
+        formSubmitted: false,
+        customerId: '883930'
+      };
+      
+      // DOM Elements
+      const stepElements = {
+        1: document.getElementById('step-1'),
+        2: document.getElementById('step-2'),
+        3: document.getElementById('step-3'),
+        4: document.getElementById('step-4'),
+        5: document.getElementById('confirmation-screen')
+      };
+      
+      const stepCircles = {
+        1: document.getElementById('step-circle-1'),
+        2: document.getElementById('step-circle-2'),
+        3: document.getElementById('step-circle-3'),
+        4: document.getElementById('step-circle-4')
+      };
+      
+      const stepLines = {
+        '1-2': document.getElementById('step-line-1-2'),
+        '2-3': document.getElementById('step-line-2-3'),
+        '3-4': document.getElementById('step-line-3-4')
+      };
+      
+      const nextButton = document.getElementById('next-button');
+      const backButton = document.getElementById('back-button');
+      const saveButton = document.getElementById('save-button');
+      
+      // Initialize
+      updateStepDisplay();
+      loadSavedData();
+      setupEventListeners();
+      
+      // Functions
+      function updateStepDisplay() {
+        // Hide all steps
+        Object.values(stepElements).forEach(el => {
+          el.classList.remove('active');
+        });
+        
+        // Show current step
+        if (state.formSubmitted) {
+          stepElements[5].classList.add('active');
+          nextButton.style.display = 'none';
+          backButton.style.display = 'none';
+          saveButton.style.display = 'none';
+        } else {
+          stepElements[state.step].classList.add('active');
+          
+          // Update progress indicators
+          Object.entries(stepCircles).forEach(([step, circle]) => {
+            const stepNum = parseInt(step);
+            if (stepNum < state.step) {
+              circle.classList.add('completed');
+              circle.classList.remove('active');
+              circle.innerHTML = '<svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+            } else if (stepNum === state.step) {
+              circle.classList.add('active');
+              circle.classList.remove('completed');
+            } else {
+              circle.classList.remove('active', 'completed');
+            }
+          });
+          
+          // Update step lines
+          Object.entries(stepLines).forEach(([line, el]) => {
+            const [from, to] = line.split('-').map(Number);
+            if (state.step > to) {
+              el.classList.add('completed');
+            } else {
+              el.classList.remove('completed');
+            }
+          });
+          
+          // Show/hide back button
+          if (state.step > 1) {
+            backButton.style.display = 'flex';
+          } else {
+            backButton.style.display = 'none';
+          }
+          
+          // Update next button text
+          if (state.step === state.totalSteps) {
+            nextButton.textContent = 'Submit Request';
+          } else {
+            nextButton.innerHTML = 'Next <svg class="icon icon-sm next-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+          }
+          
+          // Disable next button if required fields are not filled
+          updateNextButtonState();
+        }
+      }
+      
+      function updateNextButtonState() {
+        let isDisabled = false;
+        
+        switch (state.step) {
+          case 1:
+            isDisabled = !state.formData.firstName || 
+                        !state.formData.lastName || 
+                        !state.formData.email || 
+                        !state.formData.phone || 
+                        !state.formData.businessName;
+            break;
+          case 2:
+            isDisabled = !state.serviceType || !state.fencingType;
+            break;
+          case 3:
+            if (state.serviceType === 'hire') {
+              isDisabled = !state.formData.siteLocation || !state.selectedDate;
+            }
+            break;
+        }
+        
+        nextButton.disabled = isDisabled;
+      }
+      
+      function nextStep() {
+        if (state.step < state.totalSteps) {
+          state.step++;
+          updateStepDisplay();
+          window.scrollTo(0, 0);
+        } else {
+          submitForm();
+        }
+      }
+      
+      function prevStep() {
+        if (state.step > 1) {
+          state.step--;
+          updateStepDisplay();
+          window.scrollTo(0, 0);
+        }
+      }
+      
+      function submitForm() {
+        // Show loading state
+        nextButton.disabled = true;
+        nextButton.innerHTML = '<svg class="icon icon-sm spinner" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke-width="4"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg> Submitting...';
+        
+        // Extract state from address as plain text
+        const statePattern = /\b(NSW|VIC|QLD|WA|SA|TAS|ACT|NT)\b/i;
+        const stateMatch = state.formData.siteLocation.match(statePattern);
+        const stateText = stateMatch ? stateMatch[0].toUpperCase() : "";
+        
+        // Map fencing type to the correct panel option
+        const fencingTypeMap = {
+          'standard': 'Premium Grade Heavy Duty',
+          'braced': 'Builder\'s Temporary Smart Duty',
+          'pool': 'Temporary Fence Pool Panels',
+          'crowd': 'Crowd Control Barriers'
+        };
+        
+        const fencePanelType = fencingTypeMap[state.fencingType] || 'Premium Grade Heavy Duty';
+        
+        // Calculate panels, feet, clamps, and braces
+        const numPanels = Math.ceil(state.meters / 2.4);
+        const numFeet = numPanels * 2;
+        const numClamps = numPanels * 2;
+        const numBraces = Math.ceil(state.meters / 10);
+        
+        // Prepare the data for GoHighLevel
+        const contactData = {
+          // Standard contact fields
+          company_name: state.formData.businessName,
+          first_name: state.formData.firstName,
+          last_name: state.formData.lastName,
+          email: state.formData.email,
+          phone: state.formData.phone,
+          address: state.formData.siteLocation,
+          state: stateText,
+          source: "Front page form",
+          
+          // Custom fields
+          customField: {
+            // Fencing Project fields
+            quote_type: state.serviceType === 'hire' ? 'Hire' : 'Purchase',
+            fence_panel_type: fencePanelType,
+            crowd_control_barriers: 'Premium Plastic Temporary Fencing Feet',
+            fencing_meters_required: state.meters,
+            hire_duration: state.formData.duration,
+            duration_unit: state.formData.durationUnit.charAt(0).toUpperCase() + state.formData.durationUnit.slice(1),
+            total_price: "",
+            number_of_panels: numPanels,
+            number_of_feet: numFeet,
+            number_of_clamps: numClamps,
+            number_of_braces: numBraces,
+            notesspecial_requirements: state.formData.notes || "",
+            
+            // Delivery fields
+            start_date: state.selectedDate ? state.selectedDate.toISOString().split('T')[0] : "",
+            site_location__address: state.formData.siteLocation,
+            distance_km: "",
+            delivery_fee: ""
+          }
+        };
+        
+        // Determine tags to apply
+        const tags = [];
+        
+        // Add service type tag
+        if (state.serviceType === 'hire') {
+          tags.push('hire');
+        } else if (state.serviceType === 'purchase') {
+          tags.push('purchase');
+        }
+        
+        // Add fence panel type tag
+        tags.push(fencePanelType);
+        
+        // Direct API call to GoHighLevel
+        // fetch('https://rest.gohighlevel.com/v1/contacts/', {
+        //   method: 'POST',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //     'Authorization': `Bearer ${GHL_API_KEY}`,
+        //     'Location': GHL_LOCATION_ID
+        //   },
+        //   body: JSON.stringify(contactData)
+        // })
+        // .then(response => {
+        //   if (!response.ok) {
+        //     throw new Error('Failed to submit form');
+        //   }
+        //   return response.json();
+        // })
+        // .then(contact => {
+        //   // Add tags to the contact
+        //   if (tags.length > 0 && contact && contact.id) {
+        //     return fetch(`https://rest.gohighlevel.com/v1/contacts/${contact.id}/tags`, {
+        //       method: 'POST',
+        //       headers: {
+        //         'Content-Type': 'application/json',
+        //         'Authorization': `Bearer ${GHL_API_KEY}`,
+        //         'Location': GHL_LOCATION_ID
+        //       },
+        //       body: JSON.stringify({ tags })
+        //     })
+        //     .then(() => contact);
+        //   }
+        //   return contact;
+        // })
+        // .then(contact => {
+        //   // Set customer ID from response
+        //   state.customerId = contact.id || Math.floor(100000 + Math.random() * 900000).toString();
+          
+        //   // Show success state
+        //   state.formSubmitted = true;
+          
+        //   // Set submission date
+        //   const today = new Date();
+        //   document.getElementById('submission-date').textContent = today.toLocaleDateString('en-US', { 
+        //     year: 'numeric', 
+        //     month: 'long', 
+        //     day: 'numeric' 
+        //   });
+          
+        //   // Update customer ID display
+        //   document.getElementById('customer-id').textContent = state.customerId;
+          
+        //   updateStepDisplay();
+        // })
+        // .catch(error => {
+        //   console.error('Error submitting form:', error);
+          
+        //   // Show error message
+        //   nextButton.innerHTML = 'Error - Try Again';
+        //   nextButton.disabled = false;
+          
+        //   // You could add a more user-friendly error message here
+        //   alert('There was an error submitting your form. Please try again.');
+        // });
+
+        // Send data to our API endpoint
+        fetch('/api/submit-to-gohighlevel', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contactData: contactData,
+            tags: tags
+          })
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to submit form');
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Set customer ID from response
+          state.customerId = data.contactId || Math.floor(100000 + Math.random() * 900000).toString();
+          
+          // Show success state
+          state.formSubmitted = true;
+          
+          // Set submission date
+          const today = new Date();
+          document.getElementById('submission-date').textContent = today.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+          
+          // Update customer ID display
+          document.getElementById('customer-id').textContent = state.customerId;
+          
+          updateStepDisplay();
+        })
+        .catch(error => {
+          console.error('Error submitting form:', error);
+          
+          // Show error message
+          nextButton.innerHTML = 'Error - Try Again';
+          nextButton.disabled = false;
+          
+          // You could add a more user-friendly error message here
+          alert('There was an error submitting your form. Please try again.');
+        });
+      }
+      
+      function saveProgress() {
+        // Show saving state
+        saveButton.innerHTML = '<svg class="icon icon-sm spinner" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke-width="4"></circle><path d="M12 2a10 10 0 0 1 10 10"></path></svg> Saving...';
+        
+        // Save to localStorage
+        const dataToSave = {
+          step: state.step,
+          serviceType: state.serviceType,
+          fencingType: state.fencingType,
+          meters: state.meters,
+          formData: state.formData,
+          selectedDate: state.selectedDate ? state.selectedDate.toISOString() : null
+        };
+        
+        localStorage.setItem('fencingCalculatorData', JSON.stringify(dataToSave));
+        
+        // Show saved state
+        setTimeout(() => {
+          saveButton.innerHTML = '<svg class="icon icon-sm save-icon" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg> Saved';
+          
+          // Reset after 3 seconds
+          setTimeout(() => {
+            saveButton.innerHTML = '<svg class="icon icon-sm save-icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> Save Progress';
+          }, 3000);
+        }, 1000);
+      }
+      
+      function loadSavedData() {
+        const savedData = localStorage.getItem('fencingCalculatorData');
+        if (savedData) {
+          try {
+            const data = JSON.parse(savedData);
+            
+            // Restore state
+            state.step = data.step || 1;
+            state.serviceType = data.serviceType;
+            state.fencingType = data.fencingType;
+            state.meters = data.meters || 520;
+            state.formData = data.formData || state.formData;
+            
+            if (data.selectedDate) {
+              state.selectedDate = new Date(data.selectedDate);
+              updateDateDisplay();
+            }
+            
+            // Update UI
+            updateStepDisplay();
+            updateFormFields();
+            updateServiceTypeButtons();
+            updateFencingTypeOptions();
+            updateMetersSlider();
+            updateSummary();
+          } catch (error) {
+            console.error('Error loading saved data:', error);
+          }
+        }
+      }
+      
+      function updateFormFields() {
+        // Update form fields with current state
+        document.getElementById('firstName').value = state.formData.firstName;
+        document.getElementById('lastName').value = state.formData.lastName;
+        document.getElementById('email').value = state.formData.email;
+        document.getElementById('phone').value = state.formData.phone;
+        document.getElementById('businessName').value = state.formData.businessName;
+        document.getElementById('siteLocation').value = state.formData.siteLocation;
+        document.getElementById('notes').value = state.formData.notes;
+        document.getElementById('duration-value').value = state.formData.duration;
+        document.getElementById('duration-unit').value = state.formData.durationUnit;
+      }
+      
+      function updateServiceTypeButtons() {
+        const hireButton = document.getElementById('hire-button');
+        const purchaseButton = document.getElementById('purchase-button');
+        
+        hireButton.classList.toggle('active', state.serviceType === 'hire');
+        purchaseButton.classList.toggle('active', state.serviceType === 'purchase');
+      }
+      
+      function updateFencingTypeOptions() {
+        const options = document.querySelectorAll('.fencing-option');
+        options.forEach(option => {
+          option.classList.toggle('active', option.dataset.type === state.fencingType);
+        });
+      }
+      
+      function updateMetersSlider() {
+        const slider = document.getElementById('meters-slider');
+        const valueInput = document.getElementById('meters-value');
+        const currentLabel = document.querySelector('.slider-current');
+        
+        slider.value = state.meters;
+        valueInput.value = state.meters;
+        currentLabel.textContent = `${state.meters}m`;
+        
+        // Update slider track color
+        const percentage = (state.meters / 800) * 100;
+        slider.style.background = `linear-gradient(to right, #b82429 0%, #b82429 ${percentage}%, #e2e2e2 ${percentage}%, #e2e2e2 100%)`;
+      }
+      
+      function updateDateDisplay() {
+        if (state.selectedDate) {
+          const dateDisplay = document.getElementById('selected-date-display');
+          dateDisplay.innerHTML = `
+            <div class="calendar-icon-container">
+              <svg class="icon icon-sm calendar-icon" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <span class="calendar-date-text">${state.selectedDate.toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+          `;
+          
+          // Calculate end date
+          updateEndDate();
+          
+          // Show date range
+          const dateRangeContainer = document.getElementById('date-range-container');
+          dateRangeContainer.style.display = 'block';
+          
+          // Update date displays
+          document.getElementById('start-date-display').textContent = state.selectedDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+          document.getElementById('end-date-display').textContent = state.endDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+          document.getElementById('duration-display').textContent = `${state.formData.duration} ${state.formData.durationUnit}`;
+        } else {
+          const dateDisplay = document.getElementById('selected-date-display');
+          dateDisplay.innerHTML = `
+            <div class="calendar-icon-container">
+              <svg class="icon icon-sm calendar-icon" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <span class="calendar-date-text">Pick a date</span>
+          `;
+          
+          // Hide date range
+          const dateRangeContainer = document.getElementById('date-range-container');
+          dateRangeContainer.style.display = 'none';
+        }
+      }
+      
+      function updateEndDate() {
+        if (!state.selectedDate) return;
+        
+        const duration = parseInt(state.formData.duration) || 0;
+        
+        switch (state.formData.durationUnit) {
+          case 'days':
+            state.endDate = new Date(state.selectedDate);
+            state.endDate.setDate(state.selectedDate.getDate() + duration);
+            break;
+          case 'weeks':
+            state.endDate = new Date(state.selectedDate);
+            state.endDate.setDate(state.selectedDate.getDate() + (duration * 7));
+            break;
+          case 'months':
+            state.endDate = new Date(state.selectedDate);
+            state.endDate.setMonth(state.selectedDate.getMonth() + duration);
+            break;
+          default:
+            state.endDate = new Date(state.selectedDate);
+            state.endDate.setDate(state.selectedDate.getDate() + duration);
+        }
+      }
+      
+      function updateSummary() {
+        const summaryList = document.getElementById('summary-list');
+        if (!summaryList) return;
+        
+        let html = '';
+        
+        // Name
+        if (state.formData.firstName && state.formData.lastName) {
+          html += `
+            <li class="summary-item">
+              <span class="summary-label">Name:</span>
+              <span class="summary-value">${state.formData.firstName} ${state.formData.lastName}</span>
+            </li>
+          `;
+        }
+        
+        // Business
+        if (state.formData.businessName) {
+          html += `
+            <li class="summary-item">
+              <span class="summary-label">Business:</span>
+              <span class="summary-value">${state.formData.businessName}</span>
+            </li>
+          `;
+        }
+        
+        // Service Type
+        if (state.serviceType) {
+          html += `
+            <li class="summary-item">
+              <span class="summary-label">Service Type:</span>
+              <span class="summary-value">${state.serviceType.charAt(0).toUpperCase() + state.serviceType.slice(1)}</span>
+            </li>
+          `;
+        }
+        
+        // Fencing Type
+        if (state.fencingType) {
+          const fencingTypeMap = {
+            'standard': 'Standard Construction',
+            'braced': 'Standard Braced',
+            'pool': 'Pool Fencing',
+            'crowd': 'Crowd Control'
+          };
+          
+          html += `
+            <li class="summary-item">
+              <span class="summary-label">Fencing Type:</span>
+              <span class="summary-value">${fencingTypeMap[state.fencingType] || state.fencingType}</span>
+            </li>
+          `;
+        }
+        
+        // Meters
+        html += `
+          <li class="summary-item">
+            <span class="summary-label">Length Required:</span>
+            <span class="summary-value">${state.meters} M</span>
+          </li>
+        `;
+        
+        // Hire details
+        if (state.serviceType === 'hire') {
+          // Site Location
+          if (state.formData.siteLocation) {
+            html += `
+              <li class="summary-item">
+                <span class="summary-label">Site Location:</span>
+                <span class="summary-value">${state.formData.siteLocation}</span>
+              </li>
+            `;
+          }
+          
+          // Start Date
+          if (state.selectedDate) {
+            html += `
+              <li class="summary-item">
+                <span class="summary-label">Start Date:</span>
+                <span class="summary-value">${state.selectedDate.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+              </li>
+            `;
+          }
+          
+          // Duration
+          html += `
+            <li class="summary-item">
+              <span class="summary-label">Duration:</span>
+              <span class="summary-value">${state.formData.duration} ${state.formData.durationUnit}</span>
+            </li>
+          `;
+        }
+        
+        summaryList.innerHTML = html;
+      }
+      
+      function setupEventListeners() {
+        // Navigation buttons
+        nextButton.addEventListener('click', nextStep);
+        backButton.addEventListener('click', prevStep);
+        saveButton.addEventListener('click', saveProgress);
+        
+        // Form fields
+        document.getElementById('firstName').addEventListener('input', e => {
+          state.formData.firstName = e.target.value;
+          updateNextButtonState();
+        });
+        
+        document.getElementById('lastName').addEventListener('input', e => {
+          state.formData.lastName = e.target.value;
+          updateNextButtonState();
+        });
+        
+        document.getElementById('email').addEventListener('input', e => {
+          state.formData.email = e.target.value;
+          updateNextButtonState();
+        });
+        
+        document.getElementById('phone').addEventListener('input', e => {
+          state.formData.phone = e.target.value;
+          updateNextButtonState();
+        });
+        
+        document.getElementById('businessName').addEventListener('input', e => {
+          state.formData.businessName = e.target.value;
+          updateNextButtonState();
+        });
+        
+        document.getElementById('siteLocation').addEventListener('input', e => {
+          state.formData.siteLocation = e.target.value;
+          updateNextButtonState();
+          updateSummary();
+        });
+        
+        document.getElementById('notes').addEventListener('input', e => {
+          state.formData.notes = e.target.value;
+        });
+        
+        // Service type buttons
+        document.getElementById('hire-button').addEventListener('click', () => {
+          state.serviceType = 'hire';
+          state.totalSteps = 4;
+          updateServiceTypeButtons();
+          updateNextButtonState();
+          updateSummary();
+        });
+        
+        document.getElementById('purchase-button').addEventListener('click', () => {
+          state.serviceType = 'purchase';
+          state.totalSteps = 3;
+          updateServiceTypeButtons();
+          updateNextButtonState();
+          updateSummary();
+        });
+        
+        // Fencing type options
+        document.querySelectorAll('.fencing-option').forEach(option => {
+          option.addEventListener('click', () => {
+            state.fencingType = option.dataset.type;
+            updateFencingTypeOptions();
+            updateNextButtonState();
+            updateSummary();
+          });
+        });
+        
+        // Meters slider
+        const metersSlider = document.getElementById('meters-slider');
+        const metersValue = document.getElementById('meters-value');
+        
+        metersSlider.addEventListener('input', e => {
+          const value = parseInt(e.target.value);
+          state.meters = value;
+          metersValue.value = value;
+          document.querySelector('.slider-current').textContent = `${value}m`;
+          
+          // Update slider track color
+          const percentage = (value / 800) * 100;
+          metersSlider.style.background = `linear-gradient(to right, #b82429 0%, #b82429 ${percentage}%, #e2e2e2 ${percentage}%, #e2e2e2 100%)`;
+          
+          updateSummary();
+        });
+        
+        metersValue.addEventListener('input', e => {
+          let value = parseInt(e.target.value);
+          if (isNaN(value)) value = 0;
+          if (value < 0) value = 0;
+          if (value > 800) value = 800;
+          
+          state.meters = value;
+          metersSlider.value = value;
+          document.querySelector('.slider-current').textContent = `${value}m`;
+          
+          // Update slider track color
+          const percentage = (value / 800) * 100;
+          metersSlider.style.background = `linear-gradient(to right, #b82429 0%, #b82429 ${percentage}%, #e2e2e2 ${percentage}%, #e2e2e2 100%)`;
+          
+          updateSummary();
+        });
+        
+        // Calendar toggle
+        document.getElementById('calendar-toggle').addEventListener('click', () => {
+          state.isCalendarExpanded = !state.isCalendarExpanded;
+          const calendarBody = document.getElementById('calendar-body');
+          
+          if (state.isCalendarExpanded) {
+            calendarBody.classList.add('active');
+            renderCalendar();
+          } else {
+            calendarBody.classList.remove('active');
+          }
+        });
+        
+        // Duration controls
+        document.getElementById('increase-duration').addEventListener('click', () => {
+          const currentValue = parseInt(state.formData.duration) || 0;
+          state.formData.duration = (currentValue + 1).toString();
+          document.getElementById('duration-value').value = state.formData.duration;
+          updateEndDate();
+          updateDateDisplay();
+          updateSummary();
+        });
+        
+        document.getElementById('decrease-duration').addEventListener('click', () => {
+          const currentValue = parseInt(state.formData.duration) || 0;
+          if (currentValue > 1) {
+            state.formData.duration = (currentValue - 1).toString();
+            document.getElementById('duration-value').value = state.formData.duration;
+            updateEndDate();
+            updateDateDisplay();
+            updateSummary();
+          }
+        });
+        
+        document.getElementById('duration-value').addEventListener('input', e => {
+          let value = e.target.value;
+          if (/^\d*$/.test(value)) {
+            state.formData.duration = value === '' ? '1' : value;
+            updateEndDate();
+            updateDateDisplay();
+            updateSummary();
+          } else {
+            e.target.value = state.formData.duration;
+          }
+        });
+        
+        document.getElementById('duration-unit').addEventListener('change', e => {
+          state.formData.durationUnit = e.target.value;
+          updateEndDate();
+          updateDateDisplay();
+          updateSummary();
+        });
+        
+        // Confirmation screen buttons
+        document.getElementById('return-home-button').addEventListener('click', () => {
+          state.formSubmitted = false;
+          state.step = 1;
+          updateStepDisplay();
+        });
+        
+        document.getElementById('calculate-costs-button').addEventListener('click', () => {
+          console.log('Calculate costs clicked');
+          // This would typically navigate to a cost calculator
+        });
+      }
+      
+      function renderCalendar() {
+        const calendarContainer = document.getElementById('calendar-container');
+        const today = new Date();
+        const currentMonth = state.selectedDate ? state.selectedDate.getMonth() : today.getMonth();
+        const currentYear = state.selectedDate ? state.selectedDate.getFullYear() : today.getFullYear();
+        
+        // Create month and year header
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        
+        // Create calendar HTML
+        let html = `
+          <div class="calendar-nav">
+            <button class="calendar-nav-button" id="prev-month">
+              <svg class="icon icon-sm" viewBox="0 0 24 24">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <div class="calendar-month">${monthNames[currentMonth]} ${currentYear}</div>
+            <button class="calendar-nav-button" id="next-month">
+              <svg class="icon icon-sm" viewBox="0 0 24 24">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+          
+          <table class="calendar">
+            <thead>
+              <tr>
+                <th>Su</th>
+                <th>Mo</th>
+                <th>Tu</th>
+                <th>We</th>
+                <th>Th</th>
+                <th>Fr</th>
+                <th>Sa</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+        
+        // Get first day of month
+        const firstDay = new Date(currentYear, currentMonth, 1);
+        const startingDay = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        
+        // Get number of days in month
+        const lastDay = new Date(currentYear, currentMonth + 1, 0);
+        const totalDays = lastDay.getDate();
+        
+        // Create calendar days
+        let date = 1;
+        for (let i = 0; i < 6; i++) {
+          html += '<tr>';
+          
+          for (let j = 0; j < 7; j++) {
+            if (i === 0 && j < startingDay) {
+              // Empty cells before first day
+              html += '<td></td>';
+            } else if (date > totalDays) {
+              // Empty cells after last day
+              html += '<td></td>';
+            } else {
+              // Calendar day
+              const currentDate = new Date(currentYear, currentMonth, date);
+              const isToday = currentDate.toDateString() === today.toDateString();
+              const isSelected = state.selectedDate && currentDate.toDateString() === state.selectedDate.toDateString();
+              const isDisabled = currentDate < today;
+              
+              let classes = 'calendar-day';
+              if (isToday) classes += ' today';
+              if (isSelected) classes += ' selected';
+              if (isDisabled) classes += ' disabled';
+              
+              html += `
+                <td>
+                  <div class="${classes}" data-date="${currentDate.toISOString()}" ${isDisabled ? 'disabled' : ''}>
+                    ${date}
+                  </div>
+                </td>
+              `;
+              
+              date++;
+            }
+          }
+          
+          html += '</tr>';
+          
+          // Stop if we've displayed all days
+          if (date > totalDays) break;
+        }
+        
+        html += `
+            </tbody>
+          </table>
+        `;
+        
+        calendarContainer.innerHTML = html;
+        
+        // Add event listeners to calendar days
+        document.querySelectorAll('.calendar-day:not(.disabled)').forEach(day => {
+          day.addEventListener('click', () => {
+            state.selectedDate = new Date(day.dataset.date);
+            state.formData.startDate = state.selectedDate.toISOString().split('T')[0];
+            updateDateDisplay();
+            state.isCalendarExpanded = false;
+            document.getElementById('calendar-body').classList.remove('active');
+            updateNextButtonState();
+            updateSummary();
+          });
+        });
+        
+        // Add event listeners to month navigation
+        document.getElementById('prev-month').addEventListener('click', () => {
+          const newDate = state.selectedDate || today;
+          newDate.setMonth(newDate.getMonth() - 1);
+          renderCalendar();
+        });
+        
+        document.getElementById('next-month').addEventListener('click', () => {
+          const newDate = state.selectedDate || today;
+          newDate.setMonth(newDate.getMonth() + 1);
+          renderCalendar();
+        });
+      }
+    });
+  </script>
+</body>
+</html>

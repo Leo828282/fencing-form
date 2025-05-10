@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fencing Form Embed</title>
+  <style>
+    .fencing-form-container {
+      width: 100%;
+      max-width: 530px;
+      margin: 0 auto;
+      position: relative;
+      height: 765px;
+    }
+    
+    .fencing-form-iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      box-shadow: none;
+      background: transparent;
+      overflow: visible;
+    }
+  </style>
+</head>
+<body>
+  <div class="fencing-form-container">
+    <iframe 
+      id="fencing-form-iframe"
+      src="https://fencing-form-swtyvx.vercel.app/" 
+      class="fencing-form-iframe"
+      frameborder="0" 
+      allowtransparency="true"
+      scrolling="no"
+    ></iframe>
+  </div>
+
+  <script>
+    // API Keys - Replace these with your actual keys
+    const API_KEYS = {
+      GHL_API_KEY: "YOUR_GHL_API_KEY", // Replace with your actual key
+      GHL_LOCATION_ID: "YOUR_GHL_LOCATION_ID" // Replace with your actual key
+    };
+    
+    // Wait for iframe to load
+    document.getElementById('fencing-form-iframe').onload = function() {
+      const iframe = this;
+      
+      // Function to inject API keys and styles
+      function injectApiKeysAndStyles() {
+        try {
+          // Get iframe document
+          const iframeDoc = iframe.contentWindow.document;
+          
+          // Inject API keys
+          const apiKeysScript = document.createElement('script');
+          apiKeysScript.id = 'api-keys-script';
+          apiKeysScript.textContent = `
+            // Set environment variables
+            window.process = window.process || {};
+            window.process.env = window.process.env || {};
+            window.process.env.GHL_API_KEY = "${API_KEYS.GHL_API_KEY}";
+            window.process.env.GHL_LOCATION_ID = "${API_KEYS.GHL_LOCATION_ID}";
+            
+            console.log("API Keys injected:", {
+              GHL_API_KEY: window.process.env.GHL_API_KEY,
+              GHL_LOCATION_ID: window.process.env.GHL_LOCATION_ID
+            });
+            
+            // Override fetch for GoHighLevel API calls
+            const originalFetch = window.fetch;
+            window.fetch = function(url, options) {
+              // If this is a GoHighLevel API call
+              if (typeof url === 'string' && url.includes('gohighlevel')) {
+                // Make sure options exists
+                options = options || {};
+                
+                // Make sure headers exist
+                options.headers = options.headers || {};
+                
+                // Add GoHighLevel API key and location ID if not already present
+                if (!options.headers['Authorization']) {
+                  options.headers['Authorization'] = \`Bearer \${window.process.env.GHL_API_KEY}\`;
+                }
+                
+                if (!options.headers['Location']) {
+                  options.headers['Location'] = window.process.env.GHL_LOCATION_ID;
+                }
+              }
+              
+              // Call original fetch with possibly modified options
+              return originalFetch.call(this, url, options);
+            };
+          `;
+          
+          // Add the script to the iframe
+          if (!iframeDoc.getElementById('api-keys-script')) {
+            iframeDoc.head.appendChild(apiKeysScript);
+          }
+          
+          // Add styles to remove borders and backgrounds
+          const styleElement = document.createElement('style');
+          styleElement.id = 'iframe-styles';
+          styleElement.textContent = `
+            /* Remove all backgrounds */
+            body, html { background: transparent !important; }
+            
+            /* Remove all borders and backgrounds from card */
+            .card { background: transparent !important; border: none !important; box-shadow: none !important; }
+            
+            /* Remove grey backgrounds from all sections */
+            .card-content, .card-footer, .bg-gray-50, .bg-gray-100, .bg-white { background: transparent !important; }
+            
+            /* Keep the red header visible */
+            .bg-gradient-to-r { background: linear-gradient(to right, #b82429, #d42f35) !important; }
+            
+            /* Improve form elements styling */
+            input, select, textarea { 
+              border: 1px solid rgba(0,0,0,0.1) !important; 
+              padding-top: 6px !important;
+              padding-bottom: 6px !important;
+            }
+            
+            /* Fix button styling */
+            .bg-\\[\\#b82429\\], .hover\\:bg-\\[\\#a01f24\\]:hover {
+              background-color: #b82429 !important;
+              color: white !important;
+            }
+            
+            /* Calendar popup styling */
+            .rdp-months {
+              border: 2px solid #b82429 !important;
+              background-color: white !important;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+            }
+          `;
+          
+          // Add the styles to the iframe
+          if (!iframeDoc.getElementById('iframe-styles')) {
+            iframeDoc.head.appendChild(styleElement);
+          }
+          
+          // Resize iframe to match content height
+          iframe.style.height = (iframeDoc.body.scrollHeight + 50) + 'px';
+          
+        } catch (error) {
+          console.error('Error injecting API keys and styles:', error);
+        }
+      }
+      
+      // Initial injection
+      setTimeout(injectApiKeysAndStyles, 500);
+      
+      // Periodically check and inject
+      setInterval(injectApiKeysAndStyles, 2000);
+      
+      // Listen for messages from the iframe
+      window.addEventListener('message', function(event) {
+        // Check if the message is from our iframe
+        if (event.source === iframe.contentWindow) {
+          // Handle form submission success
+          if (event.data.type === 'form-submitted') {
+            console.log('Form submitted successfully:', event.data);
+            alert('Your quote request has been submitted successfully!');
+          }
+          
+          // Handle form submission error
+          if (event.data.type === 'form-error') {
+            console.error('Form submission error:', event.data.error);
+            alert('There was an error submitting your form. Please try again.');
+          }
+          
+          // Handle iframe resize request
+          if (event.data.type === 'resize-iframe') {
+            iframe.style.height = event.data.height + 'px';
+          }
+        }
+      });
+    };
+  </script>
+</body>
+</html>

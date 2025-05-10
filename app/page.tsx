@@ -1,14 +1,9 @@
-"use client"
+import FencingCalculator from "@/components/fencing-calculator"
 
-import { Suspense } from "react"
-import FencingCalculatorIntegration from "@/components/fencing-calculator-integration"
-
-export default function Page() {
+export default function Home() {
   return (
-    <main>
-      <Suspense fallback={<div>Loading calculator...</div>}>
-        <FencingCalculatorIntegration />
-      </Suspense>
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 md:p-24">
+      <FencingCalculator />
     </main>
   )
 }

@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,7 +15,6 @@ import {
   CheckCircle,
   User,
   MessageSquare,
-  Save,
   Fence,
   Loader2,
   Edit,
@@ -24,15 +22,11 @@ import {
   MapPin,
   CalendarIcon,
   Clock,
-  Plus,
-  Minus,
-  ArrowRight,
 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
-import { format, addDays, addWeeks, addMonths, differenceInDays } from "date-fns"
-import LocationAutocomplete from "./location-autocomplete"
+import { format, addDays, addWeeks, addMonths } from "date-fns"
 
 export default function FencingCalculator() {
   const [serviceType, setServiceType] = useState<"hire" | "purchase" | null>(null)
@@ -48,17 +42,17 @@ export default function FencingCalculator() {
     notes: "",
     siteLocation: "",
     startDate: "",
-    duration: "2",
+    duration: "30",
     durationUnit: "weeks",
   })
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
   const [endDate, setEndDate] = useState<Date | undefined>(undefined)
   const [isAnimating, setIsAnimating] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-  const [isSaved, setIsSaved] = useState(false)
-  const [isCalendarExpanded, setIsCalendarExpanded] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false)
   const [formSubmitted, setFormSubmitted] = useState(false)
   const [customerId, setCustomerId] = useState("883930")
+  const calendarRef = useRef<HTMLDivElement>(null)
 
   // Calculate total steps based on service type
   const totalSteps = serviceType === "hire" ? 4 : 3
@@ -95,25 +89,17 @@ export default function FencingCalculator() {
     }
   }, [selectedDate, formData.duration, formData.durationUnit])
 
-  // Load saved form data from localStorage on initial render
+  // Close calendar when clicking outside
   useEffect(() => {
-    const savedData = localStorage.getItem("fencingCalculatorData")
-    if (savedData) {
-      try {
-        const parsedData = JSON.parse(savedData)
-        setFormData(parsedData.formData || formData)
-        setServiceType(parsedData.serviceType || null)
-        setFencingType(parsedData.fencingType || null)
-        setMeters(parsedData.meters || 520)
-        setStep(parsedData.step || 1)
-
-        // Set selected date if startDate exists
-        if (parsedData.formData?.startDate) {
-          setSelectedDate(new Date(parsedData.formData.startDate))
-        }
-      } catch (error) {
-        console.error("Error loading saved data:", error)
+    function handleClickOutside(event: MouseEvent) {
+      if (calendarRef.current && !calendarRef.current.contains(event.target as Node)) {
+        setIsCalendarOpen(false)
       }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [])
 
@@ -132,16 +118,12 @@ export default function FencingCalculator() {
     }))
   }
 
-  const handleDurationInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDurationSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-    // Only allow positive numbers
-    if (/^\d*$/.test(value)) {
-      const numValue = value === "" ? "1" : value
-      setFormData((prev) => ({
-        ...prev,
-        duration: numValue,
-      }))
-    }
+    setFormData((prev) => ({
+      ...prev,
+      duration: value,
+    }))
   }
 
   const handleSelectChange = (id: string, value: string) => {
@@ -151,126 +133,72 @@ export default function FencingCalculator() {
     }))
   }
 
-  const handleDurationChange = (amount: number) => {
-    const currentDuration = Number.parseInt(formData.duration) || 0
-    const newDuration = Math.max(1, currentDuration + amount)
-    setFormData((prev) => ({
-      ...prev,
-      duration: newDuration.toString(),
-    }))
-  }
-
-  const saveProgress = () => {
-    setIsSaving(true)
-
-    // Save form data to localStorage
-    const dataToSave = {
-      formData,
-      serviceType,
-      fencingType,
-      meters,
-      step,
+  // Get max duration based on unit
+  const getMaxDuration = () => {
+    switch (formData.durationUnit) {
+      case "days":
+        return 730 // 2 years in days
+      case "weeks":
+        return 104 // 2 years in weeks
+      case "months":
+        return 24 // 2 years in months
+      default:
+        return 104
     }
-
-    localStorage.setItem("fencingCalculatorData", JSON.stringify(dataToSave))
-
-    // Simulate saving to server
-    setTimeout(() => {
-      setIsSaving(false)
-      setIsSaved(true)
-
-      // Reset saved indicator after 3 seconds
-      setTimeout(() => {
-        setIsSaved(false)
-      }, 3000)
-    }, 1000)
   }
 
+  // Get duration percentage for slider gradient
+  const getDurationPercentage = () => {
+    const max = getMaxDuration()
+    const current = Number.parseInt(formData.duration) || 0
+    return (current / max) * 100
+  }
+
+  // Replace the handleFormSubmit function with this updated version that uses the webhook
   const handleFormSubmit = () => {
     // Set loading state
-    setIsSaving(true)
+    setIsSubmitting(true)
 
-    // Map fencing type to the correct panel option
-    const fencingTypeMap = {
-      standard: "Premium Grade Heavy Duty",
-      braced: "Builder's Temporary Smart Duty",
-      pool: "Temporary Fence Pool Panels",
-      crowd: "Crowd Control Barriers",
-    }
-
-    const fencePanelType = fencingTypeMap[fencingType] || "Premium Grade Heavy Duty"
-
-    // Calculate panels, feet, clamps, and braces
-    const numPanels = Math.ceil(meters / 2.4)
-    const numFeet = numPanels * 2
-    const numClamps = numPanels * 2
-    const numBraces = Math.ceil(meters / 10)
-
-    // Extract state from address as plain text (if available)
-    const statePattern = /\b(NSW|VIC|QLD|WA|SA|TAS|ACT|NT)\b/i
-    const stateMatch = formData.siteLocation.match(statePattern)
-    const stateText = stateMatch ? stateMatch[0].toUpperCase() : ""
-
-    // Prepare the contact data for GoHighLevel
-    const contactData = {
-      // Standard contact fields
-      company_name: formData.businessName,
-      first_name: formData.firstName,
-      last_name: formData.lastName,
+    // Prepare the form data for the webhook
+    const webhookFormData = {
+      // Contact information
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      businessName: formData.businessName,
       email: formData.email,
       phone: formData.phone,
-      address: formData.siteLocation,
-      state: stateText,
-      source: "Website Fencing Calculator",
 
-      // Custom fields
-      customField: {
-        // Fencing Project fields
-        quote_type: serviceType === "hire" ? "Hire" : "Purchase",
-        fence_panel_type: fencePanelType,
-        crowd_control_barriers: "Premium Plastic Temporary Fencing Feet",
-        fencing_meters_required: meters.toString(),
-        hire_duration: formData.duration,
-        duration_unit: formData.durationUnit.charAt(0).toUpperCase() + formData.durationUnit.slice(1),
-        total_price: "",
-        number_of_panels: numPanels.toString(),
-        number_of_feet: numFeet.toString(),
-        number_of_clamps: numClamps.toString(),
-        number_of_braces: numBraces.toString(),
-        notesspecial_requirements: formData.notes || "",
+      // Address information
+      siteLocation: formData.siteLocation,
 
-        // Delivery fields
-        start_date: selectedDate ? format(selectedDate, "yyyy-MM-dd") : "",
-        site_location__address: formData.siteLocation,
-        distance_km: "",
-        delivery_fee: "",
-      },
+      // Service details
+      serviceType: serviceType,
+      fencingType: fencingType,
+      fencingMeters: meters.toString(),
+
+      // Hire-specific details
+      startDate: selectedDate ? format(selectedDate, "yyyy-MM-dd") : "",
+      duration: formData.duration,
+      durationUnit: formData.durationUnit,
+
+      // Additional information
+      notes: formData.notes,
+
+      // Source information
+      source: "Fencing Calculator",
+      submittedAt: new Date().toISOString(),
     }
 
-    // Determine tags to apply
-    const tags = []
+    console.log("Submitting form data to webhook:", webhookFormData)
 
-    // Add service type tag
-    if (serviceType === "hire") {
-      tags.push("hire")
-    } else if (serviceType === "purchase") {
-      tags.push("purchase")
-    }
-
-    // Add fence panel type tag
-    tags.push(fencePanelType)
-
-    console.log("Submitting form data:", { contactData, tags })
-
-    // Send data to our API endpoint
-    fetch("/api/submit-to-gohighlevel", {
+    // Send data to our webhook endpoint
+    fetch("/api/submit-to-webhook", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        contactData: contactData,
-        tags: tags,
+        formData: webhookFormData,
       }),
     })
       .then(async (response) => {
@@ -290,32 +218,37 @@ export default function FencingCalculator() {
       })
       .then((data) => {
         // Set customer ID from response
-        setCustomerId(data.contactId || Math.floor(100000 + Math.random() * 900000).toString())
+        const customerId = data.customerId || Math.floor(100000 + Math.random() * 900000).toString()
 
-        // Show success state
-        setFormSubmitted(true)
+        // Map fencing type to the correct panel option
+        const fencingTypeMap = {
+          standard: "Premium Grade Heavy Duty",
+          braced: "Builder's Temporary Smart Duty",
+          pool: "Temporary Fence Pool Panels",
+          crowd: "Crowd Control Barriers",
+        }
 
-        // Reset form to initial state
-        setStep(1)
-        setFormData({
-          firstName: "",
-          lastName: "",
-          businessName: "",
-          email: "",
-          phone: "",
-          notes: "",
-          siteLocation: "",
-          startDate: "",
-          duration: "2",
-          durationUnit: "weeks",
+        const fencePanelType = fencingTypeMap[fencingType as keyof typeof fencingTypeMap] || "Premium Grade Heavy Duty"
+
+        // Build the URL with query parameters
+        const params = new URLSearchParams({
+          customerId: customerId,
+          submissionDate: format(new Date(), "MMMM d, yyyy"),
+          serviceType: serviceType || "",
+          fencingType: fencingType || "",
+          meters: meters.toString(),
+          siteLocation: formData.siteLocation,
+          startDate: selectedDate ? format(selectedDate, "yyyy-MM-dd") : "",
+          duration: formData.duration,
+          durationUnit: formData.durationUnit,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          businessName: formData.businessName,
+          notes: formData.notes || "",
         })
-        setServiceType(null)
-        setFencingType(null)
-        setMeters(520)
-        setSelectedDate(undefined)
 
-        // Show a success alert
-        alert("Thank you! Your quote request has been submitted successfully.")
+        // Redirect to the confirmation page
+        window.location.href = `/submission-confirmation?${params.toString()}`
       })
       .catch((error) => {
         console.error("Error submitting form:", error)
@@ -324,7 +257,7 @@ export default function FencingCalculator() {
         alert(`There was an error submitting your form: ${error.message}. Please try again.`)
       })
       .finally(() => {
-        setIsSaving(false)
+        setIsSubmitting(false)
       })
   }
 
@@ -395,24 +328,6 @@ export default function FencingCalculator() {
       default:
         return false
     }
-  }
-
-  // Function to determine if a date should be highlighted as part of the duration
-  const isDayInRange = (date: Date) => {
-    if (!selectedDate || !endDate) return false
-
-    return date >= selectedDate && date <= endDate
-  }
-
-  // Function to get the day status for styling
-  const getDayStatus = (date: Date) => {
-    if (!selectedDate) return ""
-
-    if (date.getTime() === selectedDate.getTime()) return "start"
-    if (endDate && date.getTime() === endDate.getTime()) return "end"
-    if (isDayInRange(date)) return "in-range"
-
-    return ""
   }
 
   return (
@@ -795,152 +710,105 @@ export default function FencingCalculator() {
                       Site Location / Address <span className="text-[#b82429] ml-1">*</span>
                     </Label>
                     <div className="relative">
-                      <LocationAutocomplete
+                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input
+                        id="siteLocation"
                         value={formData.siteLocation}
-                        onChange={handleLocationChange}
+                        onChange={(e) => handleLocationChange(e.target.value)}
                         placeholder="Enter site address"
-                        required={true}
-                        className="border border-gray-300 rounded focus:border-[#b82429] focus:ring-[#b82429]"
+                        className="pl-10 border border-gray-300 rounded focus:border-[#b82429] focus:ring-[#b82429]"
+                        required
                       />
                     </div>
                   </div>
 
-                  {/* Calendar Section */}
+                  {/* Calendar Section - Dropdown Style */}
                   <div className="space-y-1.5">
                     <Label className="text-sm font-medium text-gray-700 flex items-center">
                       <CalendarIcon className="h-4 w-4 mr-1 text-[#b82429]" />
                       Select Start Date <span className="text-[#b82429] ml-1">*</span>
                     </Label>
 
-                    <div
-                      className={`border border-gray-200 rounded-md bg-white overflow-hidden transition-all ${isCalendarExpanded ? "shadow-md" : ""}`}
-                    >
-                      {!isCalendarExpanded ? (
-                        <div
-                          className="flex items-center justify-between p-3 cursor-pointer hover:bg-gray-50"
-                          onClick={() => setIsCalendarExpanded(true)}
-                        >
-                          {selectedDate ? (
-                            <>
-                              <div className="flex items-center">
-                                <div className="p-1.5 bg-[#b82429]/10 rounded-full mr-3">
-                                  <CalendarIcon className="h-4 w-4 text-[#b82429]" />
-                                </div>
-                                <span className="font-medium">{format(selectedDate, "dd MMMM yyyy")}</span>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 rounded-full hover:bg-[#b82429]/10"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setIsCalendarExpanded(true)
-                                }}
-                              >
-                                <Edit className="h-4 w-4 text-[#b82429]" />
-                              </Button>
-                            </>
-                          ) : (
-                            <div className="flex items-center w-full justify-between">
-                              <span className="text-gray-500">Pick a date</span>
-                              <ChevronRight className="h-4 w-4 text-gray-400" />
-                            </div>
-                          )}
+                    <div className="relative">
+                      <div
+                        className="flex items-center justify-between p-3 border border-gray-300 rounded-md cursor-pointer hover:border-[#b82429]"
+                        onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                      >
+                        <div className="flex items-center">
+                          <CalendarIcon className="h-4 w-4 text-gray-400 mr-2" />
+                          <span className={selectedDate ? "font-medium" : "text-gray-500"}>
+                            {selectedDate ? format(selectedDate, "dd MMMM yyyy") : "Pick a date"}
+                          </span>
                         </div>
-                      ) : (
-                        <AnimatePresence>
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.2 }}
-                          >
-                            <div className="p-2 border-t border-gray-100">
-                              <div className="flex justify-between items-center mb-2 px-2">
-                                <span className="text-sm font-medium text-gray-700">Select a date</span>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 w-7 p-0 rounded-full"
-                                  onClick={() => setIsCalendarExpanded(false)}
-                                >
-                                  <ChevronLeft className="h-4 w-4" />
-                                </Button>
-                              </div>
-                              <style jsx global>{`
-                                .rdp {
-                                  --rdp-cell-size: 40px;
-                                  --rdp-accent-color: #b82429;
-                                  --rdp-background-color: rgba(184, 36, 41, 0.1);
-                                  margin: 0;
-                                  width: 100%;
-                                }
-                                .rdp-months {
-                                  justify-content: center;
-                                  width: 100%;
-                                }
-                                .rdp-month {
-                                  width: 100%;
-                                }
-                                .rdp-table {
-                                  width: 100%;
-                                }
-                                .rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
-                                  background-color: #b82429;
-                                  color: white;
-                                  display: flex;
-                                  align-items: center;
-                                  justify-content: center;
-                                }
+                        <ChevronRight
+                          className={`h-4 w-4 text-gray-400 transition-transform ${isCalendarOpen ? "rotate-90" : ""}`}
+                        />
+                      </div>
 
-                                .rdp-button {
-                                  display: flex;
-                                  align-items: center;
-                                  justify-content: center;
-                                }
+                      {isCalendarOpen && (
+                        <div
+                          ref={calendarRef}
+                          className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-md shadow-lg"
+                        >
+                          <style jsx global>{`
+                            .rdp {
+                              --rdp-cell-size: 40px;
+                              --rdp-accent-color: #b82429;
+                              --rdp-background-color: rgba(184, 36, 41, 0.1);
+                              margin: 0;
+                              width: 100%;
+                            }
+                            .rdp-months {
+                              justify-content: center;
+                              width: 100%;
+                            }
+                            .rdp-month {
+                              width: 100%;
+                            }
+                            .rdp-table {
+                              width: 100%;
+                            }
+                            .rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
+                              background-color: #b82429;
+                              color: white;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                            }
+                            .rdp-button {
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                            }
+                            .rdp-cell {
+                              text-align: center;
+                            }
+                            .rdp-day_in_range {
+                              background-color: rgba(184, 36, 41, 0.1);
+                              color: #b82429;
+                            }
+                            .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+                              background-color: rgba(184, 36, 41, 0.05);
+                            }
+                          `}</style>
 
-                                .rdp-cell {
-                                  text-align: center;
-                                }
-                                .rdp-day_in_range {
-                                  background-color: rgba(184, 36, 41, 0.1);
-                                  color: #b82429;
-                                }
-                                .rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
-                                  background-color: rgba(184, 36, 41, 0.05);
-                                }
-                              `}</style>
-
-                              <Calendar
-                                mode="single"
-                                selected={selectedDate}
-                                onSelect={(date) => {
-                                  setSelectedDate(date)
-                                  setIsCalendarExpanded(false)
-                                }}
-                                className="border-0 mx-auto w-full"
-                                disabled={{ before: new Date() }}
-                                modifiers={{
-                                  range:
-                                    selectedDate && endDate
-                                      ? Array.from({ length: differenceInDays(endDate, selectedDate) + 1 }, (_, i) =>
-                                          addDays(selectedDate, i),
-                                        )
-                                      : [],
-                                }}
-                                modifiersClassNames={{
-                                  range: "rdp-day_in_range",
-                                }}
-                              />
-                            </div>
-                          </motion.div>
-                        </AnimatePresence>
+                          <Calendar
+                            mode="single"
+                            selected={selectedDate}
+                            onSelect={(date) => {
+                              setSelectedDate(date)
+                              setIsCalendarOpen(false)
+                            }}
+                            className="p-3"
+                            disabled={{ before: new Date() }}
+                          />
+                        </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Duration Selector */}
-                  <div className="mt-4 space-y-1.5">
+                  {/* Duration Selector with Slider */}
+                  <div className="mt-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <Label className="text-sm font-medium text-gray-700 flex items-center">
                         <Clock className="h-4 w-4 mr-1 text-[#b82429]" />
@@ -962,91 +830,126 @@ export default function FencingCalculator() {
                       </Select>
                     </div>
 
-                    <div className="w-full flex items-center justify-between bg-white border border-gray-200 rounded-lg p-4">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 rounded-full hover:bg-[#b82429]/10 hover:text-[#b82429]"
-                        onClick={() => handleDurationChange(-1)}
-                        disabled={Number.parseInt(formData.duration) <= 1}
-                      >
-                        <Minus className="h-5 w-5" />
-                        <span className="sr-only">Decrease</span>
-                      </Button>
-
-                      <input
-                        type="text"
-                        value={formData.duration}
-                        onChange={handleDurationInputChange}
-                        className="text-3xl font-semibold text-gray-800 text-center w-16 bg-transparent border-0 focus:ring-0 focus:outline-none"
-                        aria-label="Duration"
-                      />
-
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 rounded-full hover:bg-[#b82429]/10 hover:text-[#b82429]"
-                        onClick={() => handleDurationChange(1)}
-                      >
-                        <Plus className="h-5 w-5" />
-                        <span className="sr-only">Increase</span>
-                      </Button>
-                    </div>
-
-                    {/* Date Range Summary */}
-                    {selectedDate && endDate && (
-                      <div className="mt-4 pt-4 border-t border-gray-100">
-                        <div className="flex justify-between text-sm mb-2">
-                          <div>
-                            <div className="text-gray-500 text-xs">Start Date</div>
-                            <div className="font-medium">{format(selectedDate, "dd MMM yyyy")}</div>
-                          </div>
-
-                          <ArrowRight className="h-4 w-4 text-[#b82429] self-center" />
-
-                          <div className="text-right">
-                            <div className="text-gray-500 text-xs">End Date</div>
-                            <div className="font-medium">{format(endDate, "dd MMM yyyy")}</div>
+                    <motion.div
+                      className="rounded-lg overflow-hidden shadow-sm"
+                      whileHover={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
+                    >
+                      <div className="border border-gray-300 rounded-lg bg-white p-4">
+                        <div className="mb-3">
+                          <div className="flex items-center bg-white border border-gray-300 rounded-md px-3 py-2 shadow-sm hover:border-[#b82429] focus-within:ring-2 focus-within:ring-[#b82429] focus-within:border-[#b82429] transition-all w-full">
+                            <Clock className="h-4 w-4 text-[#b82429] mr-2" />
+                            <input
+                              type="number"
+                              min="1"
+                              max={getMaxDuration()}
+                              value={formData.duration}
+                              onChange={handleDurationSliderChange}
+                              className="text-xl font-semibold text-center w-full bg-transparent border-0 focus:ring-0 p-0"
+                              aria-label="Duration"
+                            />
+                            <span className="text-lg ml-1 text-gray-700">{formData.durationUnit}</span>
                           </div>
                         </div>
 
-                        <div className="relative h-1 bg-[#b82429]/10 rounded-full mt-3 mb-1">
-                          <div className="absolute left-0 right-0 h-1 bg-[#b82429]/30 rounded-full"></div>
-                          <div className="absolute left-0 top-1/2 h-3 w-3 bg-[#b82429] rounded-full -translate-y-1/2"></div>
-                          <div className="absolute right-0 top-1/2 h-3 w-3 bg-[#b82429] rounded-full -translate-y-1/2"></div>
-                        </div>
+                        <style jsx>{`
+                          .duration-range {
+                            -webkit-appearance: none;
+                            width: 100%;
+                            height: 10px;
+                            border-radius: 5px;
+                            background: #e2e2e2;
+                            outline: none;
+                            margin: 10px 0;
+                          }
+                          
+                          .duration-range::-webkit-slider-thumb {
+                            -webkit-appearance: none;
+                            appearance: none;
+                            width: 24px;
+                            height: 24px;
+                            border-radius: 50%;
+                            background: #b82429;
+                            border: 2px solid #ffffff;
+                            cursor: pointer;
+                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                            margin-top: -7px;
+                            transition: all 0.2s ease;
+                          }
+                          
+                          .duration-range::-webkit-slider-thumb:hover {
+                            transform: scale(1.1);
+                            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+                          }
+                          
+                          .duration-range::-moz-range-thumb {
+                            width: 24px;
+                            height: 24px;
+                            border-radius: 50%;
+                            background: #b82429;
+                            border: 2px solid #ffffff;
+                            cursor: pointer;
+                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                            transition: all 0.2s ease;
+                          }
+                          
+                          .duration-range::-moz-range-thumb:hover {
+                            transform: scale(1.1);
+                            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+                          }
+                          
+                          .duration-range::-webkit-slider-runnable-track {
+                            background: linear-gradient(to right, #b82429 0%, #b82429 ${getDurationPercentage()}%, #e2e2e2 ${getDurationPercentage()}%, #e2e2e2 100%);
+                            height: 10px;
+                            border-radius: 5px;
+                          }
+                          
+                          .duration-range:focus {
+                            outline: none;
+                          }
+                          
+                          .duration-range:focus::-webkit-slider-runnable-track {
+                            background: linear-gradient(to right, #a01f24 0%, #a01f24 ${getDurationPercentage()}%, #d4d4d4 ${getDurationPercentage()}%, #d4d4d4 100%);
+                          }
+                        `}</style>
 
-                        <div className="text-center text-xs font-medium text-[#b82429] mt-1">
-                          {formData.duration} {formData.durationUnit}
-                        </div>
+                        <input
+                          type="range"
+                          min="1"
+                          max={getMaxDuration()}
+                          step="1"
+                          value={formData.duration}
+                          onChange={handleDurationSliderChange}
+                          className="duration-range"
+                          aria-label="Duration"
+                        />
                       </div>
-                    )}
-                  </div>
+                    </motion.div>
 
-                  {/* Helpful Tips */}
-                  <div className="flex items-start p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
-                    <div className="mr-2 mt-0.5 text-red-500">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="16" x2="12" y2="12"></line>
-                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                      </svg>
-                    </div>
-                    <div>
-                      <p>
-                        Select a start date on the calendar and set your desired duration. The highlighted area shows
-                        your hire period.
-                      </p>
+                    {/* Helpful Tips */}
+                    <div className="flex items-start p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700">
+                      <div className="mr-2 mt-0.5 text-red-500">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <line x1="12" y1="16" x2="12" y2="12"></line>
+                          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                        </svg>
+                      </div>
+                      <div>
+                        <p>
+                          Select a start date on the calendar and set your desired duration. The highlighted area shows
+                          your hire period.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1168,77 +1071,55 @@ export default function FencingCalculator() {
           </div>
         ) : (
           <>
-            <div className="flex items-center">
-              {step > 1 && (
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    onClick={prevStep}
-                    variant="outline"
-                    className="border-[#b82429] text-[#b82429] hover:bg-[#b82429]/5"
-                    size="sm"
-                    disabled={isAnimating}
-                  >
-                    <ChevronLeft className="h-4 w-4 mr-1" />
-                    Back
-                  </Button>
-                </motion.div>
-              )}
-
-              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="ml-2">
-                <Button
-                  onClick={saveProgress}
-                  variant="outline"
-                  className="border-gray-300 text-gray-600 hover:bg-gray-50"
-                  size="sm"
-                  disabled={isSaving}
-                >
-                  {isSaving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      Saving...
-                    </>
-                  ) : isSaved ? (
-                    <>
-                      <CheckCircle className="h-4 w-4 mr-1 text-green-500" />
-                      Saved
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-1" />
-                      Save Progress
-                    </>
-                  )}
-                </Button>
-              </motion.div>
-            </div>
-
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            {/* Back button */}
+            {step > 1 && (
               <Button
-                onClick={step < totalSteps ? nextStep : handleFormSubmit}
-                className="bg-[#b82429] hover:bg-[#a01f24] text-white shadow-sm"
+                onClick={prevStep}
+                variant="outline"
+                className="border-[#b82429] text-[#b82429] hover:bg-[#b82429]/5"
                 size="sm"
-                disabled={
-                  isAnimating ||
-                  (step === 1 &&
-                    (!formData.firstName ||
-                      !formData.lastName ||
-                      !formData.email ||
-                      !formData.phone ||
-                      !formData.businessName)) ||
-                  (step === 2 && (!serviceType || !fencingType)) ||
-                  (step === 3 && serviceType === "hire" && (!formData.siteLocation || !selectedDate))
-                }
+                disabled={isAnimating}
               >
-                {step < totalSteps ? (
-                  <>
-                    Next
-                    <ChevronRight className="h-4 w-4 ml-1" />
-                  </>
-                ) : (
-                  "Submit Request"
-                )}
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Back
               </Button>
-            </motion.div>
+            )}
+
+            {/* Spacer div to push the next button to the right when there's no back button */}
+            {step === 1 && <div></div>}
+
+            {/* Next/Submit button */}
+            <Button
+              onClick={step < totalSteps ? nextStep : handleFormSubmit}
+              className="bg-[#b82429] hover:bg-[#a01f24] text-white shadow-sm"
+              size="sm"
+              disabled={
+                isAnimating ||
+                isSubmitting ||
+                (step === 1 &&
+                  (!formData.firstName ||
+                    !formData.lastName ||
+                    !formData.email ||
+                    !formData.phone ||
+                    !formData.businessName)) ||
+                (step === 2 && (!serviceType || !fencingType)) ||
+                (step === 3 && serviceType === "hire" && (!formData.siteLocation || !selectedDate))
+              }
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  Submitting...
+                </>
+              ) : step < totalSteps ? (
+                <>
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </>
+              ) : (
+                "Submit Request"
+              )}
+            </Button>
           </>
         )}
       </CardFooter>
