@@ -1,14 +1,12 @@
 import type React from "react"
-import "./globals.css"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-
-const inter = Inter({ subsets: ["latin"] })
+import "./globals.css"
+import IframeHandler from "@/components/iframe-handler"
 
 export const metadata: Metadata = {
-  title: "Fencing Cost Calculator",
+  title: "Fencing Calculator",
   description: "Calculate the cost of your fencing project",
-    generator: 'v0.dev'
+  generator: "v0.dev",
 }
 
 export default function RootLayout({
@@ -18,7 +16,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-transparent`}>{children}</body>
+      <head>
+        <meta name="referrer" content="origin" />
+      </head>
+      <body>
+        <IframeHandler />
+        {children}
+      </body>
     </html>
   )
 }

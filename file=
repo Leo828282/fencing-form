@@ -1,8 +1,0 @@
-components/fencing-calculator.tsx""// Check for any hardcoded vercel.app URLs in the component
-// If found, replace with relative paths
-
-// For example, if there's any fetch call like:
-// fetch("https://fencing-form-xyz.vercel.app/api/submit")
-
-// Change to:
-// fetch("/api/submit")

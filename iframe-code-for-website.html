@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fencing Calculator Embed</title>
+  <style>
+    /* Container styles */
+    .fencing-calculator-container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      height: 800px; /* Default height */
+      overflow: hidden;
+    }
+    
+    /* Responsive iframe */
+    .responsive-iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    
+    /* Loading indicator */
+    .iframe-loading {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(184, 36, 41, 0.2);
+      border-radius: 50%;
+      border-top-color: #b82429;
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="fencing-calculator-container" id="fencing-calculator-container">
+    <div class="iframe-loading" id="iframe-loading">
+      <div class="spinner"></div>
+    </div>
+    <iframe 
+      id="fencing-calculator-iframe"
+      class="responsive-iframe"
+      src="https://your-calculator-url.vercel.app"
+      title="Fencing Calculator"
+      allow="geolocation; clipboard-write; payment"
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade"
+    ></iframe>
+  </div>
+
+  <script>
+    // Helper function to get URL parameters
+    function getUrlParameter(name) {
+      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+      var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+      var results = regex.exec(location.search);
+      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+    
+    // Get the iframe element
+    const iframe = document.getElementById('fencing-calculator-iframe');
+    const loadingIndicator = document.getElementById('iframe-loading');
+    const container = document.getElementById('fencing-calculator-container');
+    
+    // Hide loading indicator when iframe is loaded
+    iframe.onload = function() {
+      loadingIndicator.style.display = 'none';
+      
+      // Send a message to the iframe to check if it's ready
+      iframe.contentWindow.postMessage({ type: 'CHECK_READY' }, '*');
+    };
+    
+    // Handle messages from the iframe
+    window.addEventListener('message', function(event) {
+      // Verify the origin of the message for security
+      if (event.origin !== iframe.src.split('/').slice(0, 3).join('/')) {
+        return;
+      }
+      
+      const data = event.data;
+      
+      // Handle height adjustments
+      if (data.type === 'RESIZE_IFRAME' && data.height) {
+        container.style.height = `${data.height}px`;
+      }
+      
+      // Handle modal state changes
+      if (data.type === 'MODAL_STATE_CHANGED') {
+        if (data.isOpen) {
+          // When modal is open, make container taller to accommodate it
+          container.style.height = '90vh';
+          container.style.maxHeight = '1000px';
+        } else {
+          // Reset height when modal is closed
+          container.style.height = '800px';
+        }
+      }
+      
+      // Handle Google Maps debugging info
+      if (data.type === 'GOOGLE_MAPS_DEBUG') {
+        console.log('Google Maps Debug Info:', data.info);
+      }
+    });
+    
+    // Function to check if iframe is still loading after timeout
+    setTimeout(function() {
+      if (loadingIndicator.style.display !== 'none') {
+        console.log('Iframe is taking longer than expected to load.');
+      }
+    }, 5000);
+  </script>
+</body>
+</html>
