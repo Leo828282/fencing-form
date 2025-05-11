@@ -920,8 +920,7 @@ export default function FencingCalculator({ onUpdate, onQuoteRequest, onBookingR
 
   return (
     <>
-      <div className="w-full bg-gray-100 py-6 pb-9 mb-0" />
-      <div className={`min-h-screen w-full bg-gray-100 pt-0 pb-12 px-8 ${poppins.className}`}>
+      <div className={`min-h-screen w-full pt-0 pb-12 px-8 ${poppins.className}`}>
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-6">
