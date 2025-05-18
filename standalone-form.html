@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Form</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    
+    body {
+      background-color: #f0f4f8;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+    
+    @media (max-width: 768px) {
+      .form-row {
+        flex-direction: column;
+      }
+    }
+    
+    .form-control {
+      flex: 1;
+    }
+    
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      background-color: #f0f4f8;
+      border: 1px solid #e1e8ef;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+    
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #003087;
+      box-shadow: 0 0 0 2px rgba(0, 48, 135, 0.2);
+    }
+    
+    .error-message {
+      color: #e53e3e;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    
+    .submit-button {
+      background-color: #003087;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 500;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      float: right;
+    }
+    
+    .submit-button:hover {
+      background-color: #002266;
+    }
+    
+    .submit-button:disabled {
+      background-color: #6b7280;
+      cursor: not-allowed;
+    }
+    
+    .alert {
+      padding: 12px;
+      border-radius: 4px;
+      margin-top: 15px;
+    }
+    
+    .alert-success {
+      background-color: #d1fae5;
+      color: #065f46;
+    }
+    
+    .alert-error {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+    
+    .clearfix::after {
+      content: "";
+      clear: both;
+      display: table;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Contact Us</h1>
+    
+    <form id="contactForm">
+      <div class="form-row">
+        <div class="form-control">
+          <input type="text" id="fullName" name="fullName" placeholder="Full Name*" required>
+          <div class="error-message" id="fullNameError"></div>
+        </div>
+        
+        <div class="form-control">
+          <input type="text" id="company" name="company" placeholder="Company">
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-control">
+          <input type="email" id="email" name="email" placeholder="Email Address*" required>
+          <div class="error-message" id="emailError"></div>
+        </div>
+        
+        <div class="form-control">
+          <input type="tel" id="contactNumber" name="contactNumber" placeholder="Contact Number*" required>
+          <div class="error-message" id="contactNumberError"></div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <textarea id="message" name="message" placeholder="Message*" required></textarea>
+        <div class="error-message" id="messageError"></div>
+      </div>
+      
+      <div class="clearfix">
+        <button type="submit" id="submitButton" class="submit-button">Submit Enquiry</button>
+      </div>
+      
+      <div id="successAlert" class="alert alert-success" style="display: none;">
+        Thank you for your enquiry! We'll get back to you soon.
+      </div>
+      
+      <div id="errorAlert" class="alert alert-error" style="display: none;">
+        There was a problem submitting your enquiry. Please try again.
+      </div>
+    </form>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('contactForm');
+      const submitButton = document.getElementById('submitButton');
+      const successAlert = document.getElementById('successAlert');
+      const errorAlert = document.getElementById('errorAlert');
+      
+      // Error message elements
+      const fullNameError = document.getElementById('fullNameError');
+      const emailError = document.getElementById('emailError');
+      const contactNumberError = document.getElementById('contactNumberError');
+      const messageError = document.getElementById('messageError');
+      
+      // Clear error messages
+      function clearErrors() {
+        fullNameError.textContent = '';
+        emailError.textContent = '';
+        contactNumberError.textContent = '';
+        messageError.textContent = '';
+        errorAlert.style.display = 'none';
+      }
+      
+      // Validate form
+      function validateForm() {
+        let isValid = true;
+        clearErrors();
+        
+        const fullName = document.getElementById('fullName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const contactNumber = document.getElementById('contactNumber').value.trim();
+        const message = document.getElementById('message').value.trim();
+        
+        if (fullName === '') {
+          fullNameError.textContent = 'Full name is required';
+          isValid = false;
+        }
+        
+        if (email === '') {
+          emailError.textContent = 'Email address is required';
+          isValid = false;
+        } else if (!/\S+@\S+\.\S+/.test(email)) {
+          emailError.textContent = 'Please enter a valid email address';
+          isValid = false;
+        }
+        
+        if (contactNumber === '') {
+          contactNumberError.textContent = 'Contact number is required';
+          isValid = false;
+        }
+        
+        if (message === '') {
+          messageError.textContent = 'Message is required';
+          isValid = false;
+        }
+        
+        return isValid;
+      }
+      
+      // Handle form submission
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        if (!validateForm()) {
+          return;
+        }
+        
+        // Disable submit button and show loading state
+        submitButton.disabled = true;
+        submitButton.textContent = 'Submitting...';
+        
+        // Get form data
+        const formData = {
+          firstName: document.getElementById('fullName').value.split(' ')[0],
+          lastName: document.getElementById('fullName').value.split(' ').slice(1).join(' '),
+          email: document.getElementById('email').value,
+          phone: document.getElementById('contactNumber').value,
+          companyName: document.getElementById('company').value || '',
+          message: document.getElementById('message').value,
+          source: 'Website Contact Form',
+          tags: ['Website Enquiry']
+        };
+        
+        // Replace with your actual webhook URL
+        const webhookUrl = 'https://services.leadconnectorhq.com/hooks/[your-webhook-id]';
+        
+        // Send data to webhook
+        fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.text();
+        })
+        .then(() => {
+          // Show success message
+          successAlert.style.display = 'block';
+          
+          // Reset form
+          form.reset();
+          
+          // Hide success message after 5 seconds
+          setTimeout(() => {
+            successAlert.style.display = 'none';
+          }, 5000);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          errorAlert.style.display = 'block';
+        })
+        .finally(() => {
+          // Re-enable submit button
+          submitButton.disabled = false;
+          submitButton.textContent = 'Submit Enquiry';
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,14 +1,11 @@
-"use client"
+import ContactForm from "@/components/contact-form"
 
-import { Suspense } from "react"
-import FencingCalculatorIntegration from "@/components/fencing-calculator-integration"
-
-export default function Page() {
+export default function Home() {
   return (
-    <main>
-      <Suspense fallback={<div>Loading calculator...</div>}>
-        <FencingCalculatorIntegration />
-      </Suspense>
+    <main className="min-h-screen p-4 md:p-8 bg-white">
+      <div className="max-w-4xl mx-auto">
+        <ContactForm />
+      </div>
     </main>
   )
 }
