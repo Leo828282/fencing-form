@@ -86,6 +86,8 @@ export default function ContactForm() {
     }
   }
 
+  const fontStyle = { fontFamily: "'Open Sans', sans-serif" }
+
   return (
     <div className="max-w-4xl mx-auto">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
@@ -95,10 +97,14 @@ export default function ContactForm() {
               type="text"
               placeholder="Full Name*"
               {...register("fullName")}
-              className="w-full p-4 bg-[#f0f4f8] border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-600"
-              style={{ fontFamily: "Roboto, sans-serif" }}
+              className="w-full p-4 bg-gray-100 border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-700 font-medium"
+              style={fontStyle}
             />
-            {errors.fullName && <p className="text-[#b82429] text-sm mt-1">{errors.fullName.message}</p>}
+            {errors.fullName && (
+              <p className="text-[#b82429] text-sm mt-1 font-medium" style={fontStyle}>
+                {errors.fullName.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -106,8 +112,8 @@ export default function ContactForm() {
               type="text"
               placeholder="Company"
               {...register("company")}
-              className="w-full p-4 bg-[#f0f4f8] border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-600"
-              style={{ fontFamily: "Roboto, sans-serif" }}
+              className="w-full p-4 bg-gray-100 border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-700 font-medium"
+              style={fontStyle}
             />
           </div>
         </div>
@@ -118,10 +124,14 @@ export default function ContactForm() {
               type="email"
               placeholder="Email Address*"
               {...register("email")}
-              className="w-full p-4 bg-[#f0f4f8] border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-600"
-              style={{ fontFamily: "Roboto, sans-serif" }}
+              className="w-full p-4 bg-gray-100 border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-700 font-medium"
+              style={fontStyle}
             />
-            {errors.email && <p className="text-[#b82429] text-sm mt-1">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-[#b82429] text-sm mt-1 font-medium" style={fontStyle}>
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -129,10 +139,14 @@ export default function ContactForm() {
               type="tel"
               placeholder="Contact Number*"
               {...register("contactNumber")}
-              className="w-full p-4 bg-[#f0f4f8] border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-600"
-              style={{ fontFamily: "Roboto, sans-serif" }}
+              className="w-full p-4 bg-gray-100 border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-700 font-medium"
+              style={fontStyle}
             />
-            {errors.contactNumber && <p className="text-[#b82429] text-sm mt-1">{errors.contactNumber.message}</p>}
+            {errors.contactNumber && (
+              <p className="text-[#b82429] text-sm mt-1 font-medium" style={fontStyle}>
+                {errors.contactNumber.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -140,8 +154,8 @@ export default function ContactForm() {
           <div className="relative">
             <select
               {...register("inquiryType")}
-              className="w-full p-4 bg-[#f0f4f8] border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-600 appearance-none pr-10"
-              style={{ fontFamily: "Roboto, sans-serif" }}
+              className="w-full p-4 bg-gray-100 border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-700 appearance-none pr-10 font-medium"
+              style={fontStyle}
               defaultValue=""
             >
               <option value="" disabled>
@@ -153,7 +167,11 @@ export default function ContactForm() {
             <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               <ChevronDown className="h-5 w-5 text-gray-500" />
             </div>
-            {errors.inquiryType && <p className="text-[#b82429] text-sm mt-1">{errors.inquiryType.message}</p>}
+            {errors.inquiryType && (
+              <p className="text-[#b82429] text-sm mt-1 font-medium" style={fontStyle}>
+                {errors.inquiryType.message}
+              </p>
+            )}
           </div>
 
           <div>
@@ -161,10 +179,14 @@ export default function ContactForm() {
               type="text"
               placeholder="Meters of Fencing Required*"
               {...register("meters")}
-              className="w-full p-4 bg-[#f0f4f8] border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-600"
-              style={{ fontFamily: "Roboto, sans-serif" }}
+              className="w-full p-4 bg-gray-100 border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-700 font-medium"
+              style={fontStyle}
             />
-            {errors.meters && <p className="text-[#b82429] text-sm mt-1">{errors.meters.message}</p>}
+            {errors.meters && (
+              <p className="text-[#b82429] text-sm mt-1 font-medium" style={fontStyle}>
+                {errors.meters.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -174,10 +196,14 @@ export default function ContactForm() {
               type="text"
               placeholder="Hire Duration*"
               {...register("hireDuration")}
-              className="w-full p-4 bg-[#f0f4f8] border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-600"
-              style={{ fontFamily: "Roboto, sans-serif" }}
+              className="w-full p-4 bg-gray-100 border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-700 font-medium"
+              style={fontStyle}
             />
-            {errors.hireDuration && <p className="text-[#b82429] text-sm mt-1">{errors.hireDuration.message}</p>}
+            {errors.hireDuration && (
+              <p className="text-[#b82429] text-sm mt-1 font-medium" style={fontStyle}>
+                {errors.hireDuration.message}
+              </p>
+            )}
           </div>
         )}
 
@@ -186,31 +212,35 @@ export default function ContactForm() {
             placeholder="Message*"
             {...register("message")}
             rows={6}
-            className="w-full p-4 bg-[#f0f4f8] border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-600 resize-none"
-            style={{ fontFamily: "Roboto, sans-serif" }}
+            className="w-full p-4 bg-gray-100 border-0 focus:outline-none focus:ring-1 focus:ring-[#b82429] text-gray-700 resize-none font-medium"
+            style={fontStyle}
           />
-          {errors.message && <p className="text-[#b82429] text-sm mt-1">{errors.message.message}</p>}
+          {errors.message && (
+            <p className="text-[#b82429] text-sm mt-1 font-medium" style={fontStyle}>
+              {errors.message.message}
+            </p>
+          )}
         </div>
 
         <div className="flex justify-end mt-3 w-full">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="bg-[#b82429] hover:bg-[#a01e22] text-white py-3 px-8 transition-colors duration-200 w-full"
-            style={{ fontFamily: "Barlow, sans-serif" }}
+            className="bg-[#b82429] hover:bg-[#a01e22] text-white py-3 px-8 transition-colors duration-200 w-full font-semibold"
+            style={fontStyle}
           >
             {isSubmitting ? "Submitting..." : "Submit Enquiry"}
           </button>
         </div>
 
         {submitSuccess && (
-          <div className="p-3 bg-green-100 text-green-700" style={{ fontFamily: "Barlow, sans-serif" }}>
+          <div className="p-3 bg-green-100 text-green-700 font-medium" style={fontStyle}>
             Thank you for your enquiry! We'll get back to you soon.
           </div>
         )}
 
         {submitError && (
-          <div className="p-3 bg-red-100 text-[#b82429]" style={{ fontFamily: "Barlow, sans-serif" }}>
+          <div className="p-3 bg-red-100 text-[#b82429] font-medium" style={fontStyle}>
             {submitError}
           </div>
         )}
