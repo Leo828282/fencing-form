@@ -1,11 +1,34 @@
-import ContactForm from "@/components/contact-form"
+"use client"
 
-export default function Home() {
-  return (
-    <main className="min-h-screen p-4 md:p-8 bg-white">
-      <div className="max-w-4xl mx-auto">
-        <ContactForm />
-      </div>
-    </main>
-  )
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
+import ProductSelection from "@/components/product-selection"
+
+export default function HomePage() {
+  const router = useRouter()
+
+  // Reset the configuration when landing on the home page
+  useEffect(() => {
+    // Keep any existing configuration but mark that we're starting a new session
+    const savedConfig = localStorage.getItem("fencingCalculatorConfig")
+    if (savedConfig) {
+      const config = JSON.parse(savedConfig)
+      localStorage.setItem(
+        "fencingCalculatorConfig",
+        JSON.stringify({
+          ...config,
+          newSession: true,
+        }),
+      )
+    } else {
+      localStorage.setItem(
+        "fencingCalculatorConfig",
+        JSON.stringify({
+          newSession: true,
+        }),
+      )
+    }
+  }, [])
+
+  return <ProductSelection />
 }

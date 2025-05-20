@@ -1,20 +1,11 @@
 "use client"
 
-import { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Fence, Footprints, Link, CornerRightDown, DollarSign, Truck, Shield, Clock, Info } from "lucide-react"
-import { Lato } from "next/font/google"
-
-// Initialize the Lato font
-const lato = Lato({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  display: "swap",
-  variable: "--font-lato",
-})
+import { Footprints, CornerRightDown, DollarSign, Truck, Shield, Clock, Info, Grid } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 // Fence panel options with their details
 const FENCE_OPTIONS = [
@@ -147,7 +138,9 @@ function calculateFencingCost(
   if (length <= 0) throw new Error("Length must be greater than 0")
   if (duration <= 0) throw new Error("Duration must be greater than 0")
   if (!panelType) throw new Error("Panel type is required")
-  if (!durationUnit) throw new Error("Duration unit is required")
+  if (!durationUnit || typeof durationUnit !== "string" || durationUnit.trim() === "") {
+    throw new Error("Duration unit is required and must be a non-empty string")
+  }
 
   // Enforce minimum duration based on unit
   const durationUnitObj = DURATION_UNITS.find((unit) => unit.id === durationUnit)
@@ -346,11 +339,11 @@ function getMinimumDuration(unit) {
 const getItemIcon = (category) => {
   switch (category) {
     case "panels":
-      return <Fence size={16} className="mr-2 text-[#b82429]" />
+      return <Grid size={16} className="mr-2 text-[#b82429]" />
     case "feet":
       return <Footprints size={16} className="mr-2 text-[#b82429]" />
     case "connectors":
-      return <Link size={16} className="mr-2 text-[#b82429]" />
+      return <CornerRightDown size={16} className="mr-2 text-[#b82429]" />
     case "supports":
       return <CornerRightDown size={16} className="mr-2 text-[#b82429]" />
     case "services":
@@ -358,7 +351,7 @@ const getItemIcon = (category) => {
     case "duration":
       return <Clock size={16} className="mr-2 text-[#b82429]" />
     case "discount":
-      return <Info size={16} className="mr-2 text-[#b82429]" />
+      return <Info size={16} className="mr-2 text-[#b82429] fill-[#f8d7d9]" />
     case "delivery":
       return <Truck size={16} className="mr-2 text-[#b82429]" />
     case "insurance":
@@ -392,33 +385,145 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
   // Add a ref to track if we should update the parent
   const shouldUpdateParent = useRef(false)
 
-  // Add handlers for increasing and decreasing quantities
-  const increaseQuantity = useCallback((itemName, category) => {
-    if (category === "services" || category === "delivery") return
+  // Add these new refs for the slider fill elements
+  const metersSliderFillRef = useRef(null)
+  const durationSliderFillRef = useRef(null)
 
-    setCustomQuantities((prev) => ({
-      ...prev,
-      [itemName]: (prev[itemName] || 0) + 1,
-    }))
-  }, [])
+  // Define the recalculation functions first before they're used
+  const recalculatePurchaseTotal = useCallback(
+    (customQtys) => {
+      const selectedFence = FENCE_OPTIONS.find((option) => option.id === selectedFenceType)
+      const selectedFeet = FEET_OPTIONS.find((option) => option.id === selectedFeetOption)
 
-  const decreaseQuantity = useCallback((itemName, category) => {
-    if (category === "services" || category === "delivery") return
+      if (!selectedFence || !selectedFeet) return
 
-    setCustomQuantities((prev) => ({
-      ...prev,
-      [itemName]: Math.max(1, (prev[itemName] || 0) - 1),
-    }))
-  }, [])
+      // Start with a copy of the current items list
+      const updatedItems = [...itemsList].map((item) => {
+        if (item.category === "services" || item.category === "delivery") {
+          return item
+        }
+
+        const customQty = customQtys[item.name]
+        if (customQty !== undefined) {
+          // Get the base unit price
+          const unitPrice = item.price / item.quantity
+          return {
+            ...item,
+            quantity: customQty,
+            price: unitPrice * customQty,
+          }
+        }
+        return item
+      })
+
+      // Recalculate total based on updated items
+      const updatedTotal = updatedItems.reduce((sum, item) => sum + (item.isTBC ? 0 : item.price), 0)
+      const updatedGst = updatedTotal * 0.1
+
+      setItemsList(updatedItems)
+      setTotalPrice(updatedTotal + updatedGst)
+    },
+    [selectedFenceType, selectedFeetOption, itemsList],
+  )
+
+  const recalculateHireTotal = useCallback(
+    (customQtys) => {
+      // For hire, we mainly need to update the displayed quantities
+      // since most prices are "Included" and not directly affected
+      const updatedItems = [...itemsList].map((item) => {
+        if (
+          item.category === "services" ||
+          item.category === "delivery" ||
+          item.category === "duration" ||
+          item.category === "discount"
+        ) {
+          return item
+        }
+
+        const customQty = customQtys[item.name]
+        if (customQty !== undefined) {
+          return {
+            ...item,
+            quantity: customQty,
+          }
+        }
+        return item
+      })
+
+      setItemsList(updatedItems)
+    },
+    [itemsList],
+  )
+
+  // Now define the quantity modification functions
+  const increaseQuantity = useCallback(
+    (itemName, category) => {
+      if (category === "services" || category === "delivery") return
+
+      setCustomQuantities((prev) => {
+        const newQuantities = {
+          ...prev,
+          [itemName]: (prev[itemName] || 0) + 1,
+        }
+
+        // Force recalculation of prices on next render
+        if (selectedOption === "purchase") {
+          // Delay to ensure state is updated
+          setTimeout(() => recalculatePurchaseTotal(newQuantities), 0)
+        } else {
+          setTimeout(() => recalculateHireTotal(newQuantities), 0)
+        }
+
+        return newQuantities
+      })
+    },
+    [selectedOption, recalculatePurchaseTotal, recalculateHireTotal],
+  )
+
+  const decreaseQuantity = useCallback(
+    (itemName, category) => {
+      if (category === "services" || category === "delivery") return
+
+      setCustomQuantities((prev) => {
+        const newQuantities = {
+          ...prev,
+          [itemName]: Math.max(1, (prev[itemName] || 0) - 1),
+        }
+
+        // Force recalculation of prices on next render
+        if (selectedOption === "purchase") {
+          // Delay to ensure state is updated
+          setTimeout(() => recalculatePurchaseTotal(newQuantities), 0)
+        } else {
+          setTimeout(() => recalculateHireTotal(newQuantities), 0)
+        }
+
+        return newQuantities
+      })
+    },
+    [selectedOption, recalculatePurchaseTotal, recalculateHireTotal],
+  )
 
   // Add this function after the decreaseQuantity function
-  const resetQuantity = useCallback((itemName) => {
-    setCustomQuantities((prev) => {
-      const newQuantities = { ...prev }
-      delete newQuantities[itemName]
-      return newQuantities
-    })
-  }, [])
+  const resetQuantity = useCallback(
+    (itemName) => {
+      setCustomQuantities((prev) => {
+        const newQuantities = { ...prev }
+        delete newQuantities[itemName]
+
+        // Force recalculation of prices on next render
+        if (selectedOption === "purchase") {
+          // Delay to ensure state is updated
+          setTimeout(() => recalculatePurchaseTotal(newQuantities), 0)
+        } else {
+          setTimeout(() => recalculateHireTotal(newQuantities), 0)
+        }
+
+        return newQuantities
+      })
+    },
+    [selectedOption, recalculatePurchaseTotal, recalculateHireTotal],
+  )
 
   // Add a function to get the final quantity (either custom or calculated)
   const getItemQuantity = useCallback(
@@ -508,7 +613,7 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
         // Ensure the loaded duration meets the minimum requirements
         const minDuration = getMinimumDuration(config.durationUnit)
         setHireDuration(Math.max(minDuration, config.hireDuration))
-        setDurationUnit(config.durationUnit)
+        setDurationUnit(config.durationUnit || DURATION_UNITS[1].id)
       } catch (e) {
         console.error("Error loading saved configuration", e)
       }
@@ -539,27 +644,38 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
     }
   }, [durationUnit, hireDuration])
 
-  // Add this useLayoutEffect after the existing useEffect hooks
-  useLayoutEffect(() => {
-    // Initialize slider backgrounds immediately
-    if (sliderRef.current) {
-      const percentage = ((metersRequired - 1) / (800 - 1)) * 100
-      sliderRef.current.style.background = `linear-gradient(to right, #b82429 0%, #b82429 ${percentage}%, #e2e8f0 ${percentage}%, #e2e8f0 100%)`
-      // Ensure the slider has the correct z-index
-      sliderRef.current.style.position = "relative"
-      sliderRef.current.style.zIndex = "1"
+  // Update the updateSliderFill function
+  const updateSliderFill = useCallback(() => {
+    // Update the meters slider fill
+    if (sliderRef.current && metersSliderFillRef.current) {
+      const min = 1
+      const max = 800
+      const val = metersRequired
+      const percentage = ((val - min) / (max - min)) * 100
+
+      // Update the fill element's width directly with percentage
+      metersSliderFillRef.current.style.width = `${percentage}%`
     }
 
-    if (durationSliderRef.current && durationUnit) {
-      const maxDuration = getMaxDuration()
-      const minDuration = getMinimumDuration(durationUnit)
-      const percentage = ((hireDuration - minDuration) / (maxDuration - minDuration)) * 100
-      durationSliderRef.current.style.background = `linear-gradient(to right, #b82429 0%, #b82429 ${percentage}%, #e2e8f0 ${percentage}%, #e2e8f0 100%)`
-      // Ensure the slider has the correct z-index
-      durationSliderRef.current.style.position = "relative"
-      durationSliderRef.current.style.zIndex = "1"
+    // Update the duration slider fill
+    if (durationSliderRef.current && durationSliderFillRef.current && durationUnit) {
+      const min = getMinimumDuration(durationUnit)
+      const max = getMaxDuration()
+      const val = hireDuration
+      const percentage = ((val - min) / (max - min)) * 100
+
+      // Update the fill element's width directly with percentage
+      durationSliderFillRef.current.style.width = `${percentage}%`
     }
   }, [metersRequired, hireDuration, durationUnit, getMaxDuration])
+
+  // Update slider fill when values change
+  useEffect(() => {
+    updateSliderFill()
+    // Set a small timeout to ensure the DOM has fully rendered
+    const timeoutId = setTimeout(updateSliderFill, 50)
+    return () => clearTimeout(timeoutId)
+  }, [metersRequired, hireDuration, durationUnit, updateSliderFill])
 
   // Calculate the required items and total price for purchase
   useEffect(() => {
@@ -744,6 +860,12 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
     const minDuration = getMinimumDuration(durationUnit)
     const durationValue = Math.max(minDuration, hireDuration)
 
+    if (!durationUnit) {
+      // Set a default duration unit if it's undefined
+      setDurationUnit(DURATION_UNITS[1].id) // Default to weeks
+      return // Exit early and wait for the next render with the updated state
+    }
+
     try {
       const result = calculateFencingCost(
         metersRequired,
@@ -821,7 +943,6 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
             price: isDeliveryCalculated ? result.deliveryFee : 0,
             priceDisplay: isDeliveryCalculated ? "Included" : "TBC",
             category: "delivery",
-            isTBC: !isDeliveryCalculated,
           })
         }
 
@@ -919,33 +1040,6 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
     return price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
   }, [])
 
-  // Update slider fill based on value
-  useEffect(() => {
-    // Function to update slider background
-    const updateSliderBackground = () => {
-      if (sliderRef.current) {
-        const percentage = ((metersRequired - 1) / (800 - 1)) * 100
-        sliderRef.current.style.background = `linear-gradient(to right, #b82429 0%, #b82429 ${percentage}%, #e2e8f0 ${percentage}%, #e2e8f0 100%)`
-      }
-
-      if (durationSliderRef.current && durationUnit) {
-        const maxDuration = getMaxDuration()
-        const minDuration = getMinimumDuration(durationUnit)
-        const percentage = ((hireDuration - minDuration) / (maxDuration - minDuration)) * 100
-        durationSliderRef.current.style.background = `linear-gradient(to right, #b82429 0%, #b82429 ${percentage}%, #e2e8f0 ${percentage}%, #e2e8f0 100%)`
-      }
-    }
-
-    // Update immediately
-    updateSliderBackground()
-
-    // Set a small timeout to ensure the DOM has fully rendered
-    const timeoutId = setTimeout(updateSliderBackground, 50)
-
-    // Clean up the timeout
-    return () => clearTimeout(timeoutId)
-  }, [metersRequired, hireDuration, durationUnit, getMaxDuration])
-
   // Handle duration unit change
   const handleDurationUnitChange = useCallback(
     (newUnit) => {
@@ -1037,20 +1131,73 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
 
   // Handle quote request - navigate to quote page with data
   const handleQuoteRequest = useCallback(() => {
-    const quoteData = {
-      itemsList,
-      totalPrice,
-      selectedOption,
-      metersRequired,
-      hireDuration,
-      durationUnit,
-      selectedFenceType,
-      selectedFeetOption,
-    }
+    try {
+      // Save current configuration to localStorage first
+      const config = {
+        selectedFenceType,
+        selectedOption,
+        selectedFeetOption,
+        metersRequired,
+        hireDuration,
+        durationUnit,
+        totalCost: totalPrice,
+      }
+      localStorage.setItem("fencingCalculatorConfig", JSON.stringify(config))
 
-    // Encode the data to pass in URL
-    const encodedData = encodeURIComponent(JSON.stringify(quoteData))
-    router.push(`/quote-request?data=${encodedData}`)
+      // Prepare quote data - include the full itemsList
+      const quoteData = {
+        fenceType: selectedFenceType,
+        accessoryType: selectedFeetOption,
+        purchaseOption: selectedOption,
+        metersRequired,
+        hireDuration,
+        durationUnit,
+        totalCost: totalPrice,
+        itemsList: itemsList, // Make sure to include the itemsList
+      }
+
+      // Encode the data to pass in URL
+      const encodedData = encodeURIComponent(JSON.stringify(quoteData))
+      router.push(`/quote-request?data=${encodedData}`)
+    } catch (error) {
+      console.error("Navigation error:", error)
+      // Fallback if navigation fails
+      window.location.href = `/quote-request?data=${encodeURIComponent(
+        JSON.stringify({
+          fenceType: selectedFenceType,
+          accessoryType: selectedFeetOption,
+          purchaseOption: selectedOption,
+          totalCost: totalPrice,
+        }),
+      )}`
+    }
+  }, [
+    selectedFenceType,
+    selectedOption,
+    selectedFeetOption,
+    metersRequired,
+    hireDuration,
+    durationUnit,
+    totalPrice,
+    itemsList,
+    router,
+  ])
+
+  // Add this effect to save the calculator state including itemsList to localStorage
+  useEffect(() => {
+    if (itemsList.length > 0) {
+      const calculatorState = {
+        itemsList,
+        totalPrice,
+        selectedOption,
+        metersRequired,
+        hireDuration,
+        durationUnit,
+        selectedFenceType,
+        selectedFeetOption,
+      }
+      localStorage.setItem("calculatorState", JSON.stringify(calculatorState))
+    }
   }, [
     itemsList,
     totalPrice,
@@ -1060,14 +1207,13 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
     durationUnit,
     selectedFenceType,
     selectedFeetOption,
-    router,
   ])
 
   return (
-    <div className={`w-full min-h-screen ${lato.className}`} style={{ backgroundColor: "#F1EFEA" }}>
+    <div className="w-full font-sans">
       <div className="container mx-auto p-3 py-6">
         <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm">
-          <h2 className="font-bold text-xl mb-4 pb-2 border-b border-gray-100">Fencing Calculator</h2>
+          <h2 className="font-heading font-bold text-xl mb-4 pb-2 border-b border-gray-100">Fencing Calculator</h2>
 
           <div className="flex gap-2 mb-4">
             {SELECT_OPTIONS.map((option) => (
@@ -1087,7 +1233,7 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
-              <h3 className="font-bold text-base mb-2">Select Fence Panel Options</h3>
+              <h3 className="font-heading font-bold text-base mb-2">Select Fence Panel Options</h3>
               <Select value={selectedFenceType} onValueChange={setSelectedFenceType}>
                 <SelectTrigger
                   className={`w-full border border-gray-300 rounded-md h-12 ${
@@ -1111,7 +1257,7 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
             </div>
 
             <div>
-              <h3 className="font-bold text-base mb-2">Select Feet Option</h3>
+              <h3 className="font-heading font-bold text-base mb-2">Select Feet Option</h3>
               <Select value={selectedFeetOption} onValueChange={setSelectedFeetOption}>
                 <SelectTrigger
                   className={`w-full border border-gray-300 rounded-md h-12 ${
@@ -1136,7 +1282,7 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
           </div>
 
           <div className="mb-6">
-            <h3 className="font-bold text-base mb-3">Meters of Fencing Required</h3>
+            <h3 className="font-heading font-bold text-base mb-3">Meters of Fencing Required</h3>
             <div className="mb-3">
               <Input
                 type="number"
@@ -1149,38 +1295,36 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                     setMetersRequired(Math.min(800, Math.max(1, value)))
                   }
                 }}
-                className="border border-gray-300 rounded-md h-12"
+                className="border border-gray-300 rounded-none h-12 mb-2 bg-white"
               />
-            </div>
-            <div className="px-1 mb-2">
-              <input
-                ref={sliderRef}
-                type="range"
-                min={1}
-                max={800}
-                value={metersRequired}
-                onChange={(e) => {
-                  const value = Number(e.target.value)
-                  setMetersRequired(value)
-                  // Update the background immediately on change
-                  const percentage = ((value - 1) / (800 - 1)) * 100
-                  e.target.style.background = `linear-gradient(to right, #b82429 0%, #b82429 ${percentage}%, #e2e8f0 ${percentage}%, #e2e8f0 100%)`
-                }}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                style={{ verticalAlign: "middle" }}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-gray-500 px-1">
-              <span>1m</span>
-              <span>400m</span>
-              <span>800m</span>
+              <div className="slider-container">
+                <div ref={metersSliderFillRef} className="slider-fill"></div>
+                <input
+                  ref={sliderRef}
+                  type="range"
+                  min={1}
+                  max={800}
+                  value={metersRequired}
+                  onChange={(e) => {
+                    const value = Number.parseInt(e.target.value)
+                    setMetersRequired(value)
+                  }}
+                  className="w-full"
+                  aria-label="Meters of fencing"
+                />
+              </div>
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>1m</span>
+                <span>400m</span>
+                <span>800m</span>
+              </div>
             </div>
           </div>
 
           {selectedOption === "hire" && (
             <div className="mb-6">
               <div className="flex justify-between items-center mb-3">
-                <h3 className="font-bold text-base">Hire Duration</h3>
+                <h3 className="font-heading font-bold text-base">Hire Duration</h3>
                 <div className="flex items-center">
                   <span className="text-sm mr-2">Unit:</span>
                   <Select value={durationUnit} onValueChange={handleDurationUnitChange}>
@@ -1217,45 +1361,41 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                       setHireDuration(Math.min(getMaxDuration(), Math.max(getMinimumDuration(durationUnit), value)))
                     }
                   }}
-                  className="border border-gray-300 rounded-md h-12"
+                  className="border border-gray-300 rounded-none h-12 mb-2 bg-white"
                 />
-              </div>
-              <div className="px-1 mb-2">
-                <input
-                  ref={durationSliderRef}
-                  type="range"
-                  min={getMinimumDuration(durationUnit)}
-                  max={getMaxDuration()}
-                  value={hireDuration}
-                  onChange={(e) => {
-                    const value = Number(e.target.value)
-                    setHireDuration(value)
-                    // Update the background immediately on change
-                    const minDuration = getMinimumDuration(durationUnit)
-                    const maxDuration = getMaxDuration()
-                    const percentage = ((value - minDuration) / (maxDuration - minDuration)) * 100
-                    e.target.style.background = `linear-gradient(to right, #b82429 0%, #b82429 ${percentage}%, #e2e8f0 ${percentage}%, #e2e8f0 100%)`
-                  }}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                  style={{ verticalAlign: "middle" }}
-                />
-              </div>
-              <div className="flex justify-between text-xs text-gray-500 px-1">
-                <span>
-                  {getMinimumDuration(durationUnit)} {durationUnit}
-                </span>
-                <span>
-                  {Math.floor(getMaxDuration() / 2)} {durationUnit}
-                </span>
-                <span>
-                  {getMaxDuration()} {durationUnit}
-                </span>
+                <div className="slider-container">
+                  <div ref={durationSliderFillRef} className="slider-fill"></div>
+                  <input
+                    ref={durationSliderRef}
+                    type="range"
+                    min={getMinimumDuration(durationUnit)}
+                    max={getMaxDuration()}
+                    value={hireDuration}
+                    onChange={(e) => {
+                      const value = Number.parseInt(e.target.value)
+                      setHireDuration(value)
+                    }}
+                    className="w-full"
+                    aria-label="Hire duration"
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>
+                    {getMinimumDuration(durationUnit)} {durationUnit}
+                  </span>
+                  <span>
+                    {Math.floor(getMaxDuration() / 2)} {durationUnit}
+                  </span>
+                  <span>
+                    {getMaxDuration()} {durationUnit}
+                  </span>
+                </div>
               </div>
             </div>
           )}
 
           <div className="border border-gray-200 rounded-md p-4 mb-6">
-            <h3 className="font-bold text-base mb-4">Item List:</h3>
+            <h3 className="font-heading font-bold text-base mb-4">Item List:</h3>
             {Object.keys(customQuantities).length > 0 && (
               <div className="mb-4 p-3 bg-[#f8d7d9] border border-[#b82429] rounded-md">
                 <div className="flex items-center text-[#b82429]">
@@ -1267,7 +1407,15 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                     </p>
                   </div>
                   <button
-                    onClick={() => setCustomQuantities({})}
+                    onClick={() => {
+                      setCustomQuantities({})
+                      // Force recalculation with empty custom quantities
+                      if (selectedOption === "purchase") {
+                        setTimeout(() => recalculatePurchaseTotal({}), 0)
+                      } else {
+                        setTimeout(() => recalculateHireTotal({}), 0)
+                      }
+                    }}
                     className="ml-auto bg-white text-[#b82429] px-3 py-1 text-sm font-medium border border-[#b82429] rounded-md hover:bg-gray-50 transition-colors"
                   >
                     Reset All
@@ -1338,9 +1486,9 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
               </tbody>
               <tfoot>
                 <tr className="border-t border-gray-200 font-bold">
-                  <td className="py-3">Total (Incl. GST)</td>
+                  <td className="py-3 text-[#b82429] font-bold">Total (Incl. GST)</td>
                   <td></td>
-                  <td className="text-right py-3">${formatPrice(totalPrice)}</td>
+                  <td className="text-right py-3 text-[#b82429] font-bold">${formatPrice(totalPrice)}</td>
                 </tr>
               </tfoot>
               {Object.keys(customQuantities).length > 0 && (
@@ -1353,19 +1501,27 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
             </table>
           </div>
 
-          <div className="flex gap-3">
+          {/* Action buttons */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <Button
-              className="flex-1 bg-[#b82429] hover:bg-[#9e1f23] text-white py-4 text-lg font-medium rounded-none"
               onClick={handleQuoteRequest}
+              className="bg-[#b82429] hover:bg-[#9e1f23] text-white py-4 px-6 text-lg font-medium rounded-md w-full"
             >
               Get a Quote
             </Button>
             <Button
-              className="flex-1 bg-white border-2 border-[#b82429] text-[#b82429] hover:bg-gray-50 py-4 text-lg font-medium rounded-none"
               onClick={onBookingRequest}
+              className="border-2 border-[#b82429] text-[#b82429] bg-white hover:bg-gray-50 py-4 px-6 text-lg font-medium rounded-md w-full"
             >
               Book a Call
             </Button>
+          </div>
+
+          {/* Single set of pagination dots */}
+          <div className="flex justify-center space-x-2">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className={`w-3 h-3 rounded-full ${i === 4 ? "bg-[#b82429]" : "bg-gray-300"}`} />
+            ))}
           </div>
         </div>
       </div>

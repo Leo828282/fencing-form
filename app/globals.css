@@ -4,35 +4,65 @@
 
 :root {
   --foreground-rgb: 0, 0, 0;
-  --background-rgb: 255, 255, 255;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --foreground-rgb: 255, 255, 255;
-    --background-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
   }
 }
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+  background-color: #f1efea;
+  font-family: var(--font-open-sans), system-ui, sans-serif;
 }
 
-/* Custom slider styles */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.heading {
+  font-family: var(--font-titillium-web), system-ui, sans-serif;
+}
+
+/* Slider styles */
+.slider-container {
+  position: relative;
+  height: 8px;
+  margin: 16px 0;
+}
+
+.slider-fill {
+  position: absolute;
+  height: 8px;
+  background-color: #b82429;
+  border-radius: 4px;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
+  width: 100%;
   height: 8px;
   border-radius: 4px;
+  background: #e5e7eb;
   outline: none;
-  margin: 12px 0;
-  position: relative;
-  width: 100%;
-  background: #e2e8f0;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
-/* Update the slider thumb size to make it slightly smaller */
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -41,9 +71,8 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 50%;
   background: #b82429;
   cursor: pointer;
-  border: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  margin-top: -6px;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 2;
 }
@@ -54,126 +83,84 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 50%;
   background: #b82429;
   cursor: pointer;
-  border: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: relative;
   z-index: 2;
 }
 
-/* Fix for Firefox */
-input[type="range"]::-moz-range-track {
+input[type="range"]::-moz-range-progress {
+  background: #b82429;
   height: 8px;
   border-radius: 4px;
-  background: #e2e8f0;
 }
 
-/* Ensure the track is properly sized */
-input[type="range"]::-webkit-slider-runnable-track {
-  width: 100%;
-  height: 8px;
-  border-radius: 4px;
-  background: #e2e8f0;
-}
-
-input[type="range"]::-moz-range-track {
-  width: 100%;
-  height: 8px;
-  border-radius: 4px;
-  background: #e2e8f0;
-}
-
-/* This is the key fix for the slider trail - restore it */
-input[type="range"].custom-slider {
-  background: linear-gradient(to right, #b82429 0%, #b82429 50%, #e2e8f0 50%, #e2e8f0 100%);
-}
-
-/* Add a slider container class for consistent spacing */
-.slider-container {
-  margin-bottom: 1.25rem;
-}
-
-.slider-container label {
-  margin-bottom: 0.5rem;
-  display: block;
-}
-
-.slider-container .slider-value {
-  margin-top: 0.5rem;
-}
-
-.slider-markers {
+/* Pagination dots */
+.pagination-dots {
   display: flex;
-  justify-content: space-between;
-  margin-top: 0.5rem;
-  padding: 0 0.25rem;
-}
-
-.slider-markers span {
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-/* Completely remove all outlines and shadows on focus */
-button:focus,
-input:focus,
-select:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-/* Consistent transition effects */
-button,
-input,
-select {
-  transition: all 0.2s ease-in-out;
-}
-
-/* Add these styles for the quantity adjustment buttons */
-.quantity-control {
-  display: flex;
-  align-items: center;
   justify-content: center;
+  gap: 8px;
+  margin-top: 2rem;
 }
 
-.quantity-btn {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f1f1f1;
-  border: 1px solid #ddd;
-  cursor: pointer;
-  user-select: none;
-  transition: background-color 0.2s;
+.pagination-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #e5e7eb;
 }
 
-.quantity-btn:hover:not(:disabled) {
-  background-color: #e0e0e0;
+.pagination-dot.active {
+  background-color: #b82429;
 }
 
-.quantity-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+/* Page layout */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
 }
 
-.quantity-btn.minus {
-  border-radius: 4px 0 0 4px;
-}
-
-.quantity-btn.plus {
-  border-radius: 0 4px 4px 0;
-}
-
-.quantity-value {
-  padding: 0 8px;
-  min-width: 32px;
+.page-title {
+  font-family: var(--font-titillium-web), system-ui, sans-serif;
+  font-size: 48px;
+  font-weight: 600;
   text-align: center;
-  border-top: 1px solid #ddd;
-  border-bottom: 1px solid #ddd;
+  margin-bottom: 16px;
 }
 
-/* Fix for the custom slider to ensure no red trail */
-input[type="range"].custom-slider {
-  background: linear-gradient(to right, #b82429 0%, #b82429 50%, #e2e8f0 50%, #e2e8f0 100%);
+.skip-link {
+  text-align: center;
+  margin-bottom: 40px;
+  color: #555;
+  font-size: 16px;
+}
+
+.skip-link a {
+  color: #b82429;
+  text-decoration: none;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 30px;
+  color: #555;
+  font-size: 16px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.back-button:hover {
+  color: #b82429;
+}
+
+/* Add these font family classes */
+.font-heading {
+  font-family: "Titillium Web", sans-serif;
+}
+
+.font-sans {
+  font-family: "Open Sans", sans-serif;
 }

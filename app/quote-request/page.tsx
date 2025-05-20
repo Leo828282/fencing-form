@@ -3,18 +3,28 @@
 import { useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Lato } from "next/font/google"
-import { Fence, Footprints, Link, CornerRightDown, DollarSign, Truck, Shield, Clock, Info } from "lucide-react"
-
-// Initialize the Lato font
-const lato = Lato({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-  display: "swap",
-  variable: "--font-lato",
-})
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  Grid,
+  Footprints,
+  LinkIcon,
+  CornerRightDown,
+  DollarSign,
+  Truck,
+  Shield,
+  Clock,
+  Info,
+  ArrowLeft,
+  User,
+  MapPin,
+  FileText,
+  AlertCircle,
+} from "lucide-react"
+import Link from "next/link"
 
 export default function QuoteRequestPage() {
+  // Existing state and functions...
   const router = useRouter()
   const searchParams = useSearchParams()
   const dataFetchedRef = useRef(false)
@@ -27,7 +37,7 @@ export default function QuoteRequestPage() {
     company: "",
     address: "",
     city: "",
-    state: "",
+    state: "NSW", // Default state
     zip: "",
     message: "",
   })
@@ -47,49 +57,7 @@ export default function QuoteRequestPage() {
   const [dataError, setDataError] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
 
-  // Add this function to update the slider background
-  const updateSliderTrail = (e) => {
-    const slider = e.target
-    const min = Number.parseFloat(slider.min) || 0
-    const max = Number.parseFloat(slider.max) || 100
-    const value = Number.parseFloat(slider.value)
-    const percentage = ((value - min) / (max - min)) * 100
-
-    // Create gradient background with red up to the thumb position
-    slider.style.background = `linear-gradient(to right, #b82429 0%, #b82429 ${percentage}%, #e2e8f0 ${percentage}%, #e2e8f0 100%)`
-  }
-
-  // Add useEffect to initialize sliders when component mounts
-  useEffect(() => {
-    if (dataLoaded) {
-      // Find all range inputs and initialize their backgrounds
-      const sliders = document.querySelectorAll('input[type="range"]')
-      sliders.forEach((slider) => {
-        updateSliderTrail({ target: slider })
-
-        // Add event listeners
-        slider.addEventListener("input", updateSliderTrail)
-      })
-
-      // Cleanup function to remove event listeners
-      return () => {
-        sliders.forEach((slider) => {
-          slider.removeEventListener("input", updateSliderTrail)
-        })
-      }
-    }
-  }, [dataLoaded])
-
-  // Add this function inside the component, before the return statement
-  function updateSliderBackground(e) {
-    const slider = e.target
-    const min = slider.min || 0
-    const max = slider.max || 100
-    const value = slider.value
-    const percentage = ((value - min) / (max - min)) * 100
-    slider.style.background = `linear-gradient(to right, #b82429 0%, #b82429 ${percentage}%, #e2e8f0 ${percentage}%, #e2e8f0 100%)`
-  }
-
+  // All the existing useEffect hooks and functions...
   // Load quote details from URL params - only run once
   useEffect(() => {
     // If we've already fetched the data, don't do it again
@@ -98,11 +66,43 @@ export default function QuoteRequestPage() {
     try {
       const encodedData = searchParams.get("data")
 
-      // If no data parameter is provided, redirect to calculator
+      // If no data parameter is provided, try to load from localStorage
       if (!encodedData) {
-        console.error("No data parameter found in URL")
-        setDataError(true)
-        return
+        console.log("No data parameter found in URL, trying localStorage")
+        const savedConfig = localStorage.getItem("fencingCalculatorConfig")
+
+        if (savedConfig) {
+          const config = JSON.parse(savedConfig)
+
+          // Try to load itemsList from localStorage if available
+          let itemsList = []
+          try {
+            const calculatorState = localStorage.getItem("calculatorState")
+            if (calculatorState) {
+              const parsedState = JSON.parse(calculatorState)
+              itemsList = parsedState.itemsList || []
+            }
+          } catch (e) {
+            console.error("Error loading items from localStorage:", e)
+          }
+
+          setQuoteDetails({
+            itemsList: itemsList,
+            totalPrice: config.totalCost || 0,
+            selectedOption: config.selectedOption || "purchase",
+            metersRequired: config.metersRequired || 10,
+            hireDuration: config.hireDuration || 1,
+            durationUnit: config.durationUnit || "weeks",
+            selectedFenceType: config.selectedFenceType || "builders",
+            selectedFeetOption: config.selectedFeetOption || "feet",
+          })
+          setDataLoaded(true)
+          dataFetchedRef.current = true
+          return
+        } else {
+          setDataError(true)
+          return
+        }
       }
 
       // First try to decode the URI component
@@ -118,7 +118,22 @@ export default function QuoteRequestPage() {
       // Then try to parse the JSON
       try {
         const decodedData = JSON.parse(decodedString)
-        setQuoteDetails(decodedData)
+        console.log("Decoded data:", decodedData) // Debug log
+
+        // Handle both old and new data formats
+        const formattedData = {
+          itemsList: decodedData.itemsList || [],
+          totalPrice: decodedData.totalCost || decodedData.totalPrice || 0,
+          selectedOption: decodedData.purchaseOption || decodedData.selectedOption || "purchase",
+          metersRequired: decodedData.metersRequired || 10,
+          hireDuration: decodedData.hireDuration || 1,
+          durationUnit: decodedData.durationUnit || "weeks",
+          selectedFenceType: decodedData.fenceType || decodedData.selectedFenceType || "builders",
+          selectedFeetOption: decodedData.accessoryType || decodedData.selectedFeetOption || "feet",
+        }
+
+        console.log("Formatted data:", formattedData) // Debug log
+        setQuoteDetails(formattedData)
         setDataLoaded(true)
         // Mark that we've fetched the data
         dataFetchedRef.current = true
@@ -137,7 +152,7 @@ export default function QuoteRequestPage() {
     if (dataError) {
       // Use a timeout to avoid immediate redirect which could cause issues
       const timeoutId = setTimeout(() => {
-        router.push("/")
+        router.push("/calculator")
       }, 1500) // Increased timeout to give user time to see the error message
       return () => clearTimeout(timeoutId)
     }
@@ -206,6 +221,8 @@ export default function QuoteRequestPage() {
         },
       }
 
+      console.log("Submitting data:", submissionData) // Debug log
+
       // Simulate API call (replace with actual API call)
       await new Promise((resolve) => setTimeout(resolve, 1500))
 
@@ -215,7 +232,7 @@ export default function QuoteRequestPage() {
 
       // Redirect back to calculator after showing success message
       setTimeout(() => {
-        router.push("/")
+        router.push("/calculator")
       }, 2000)
     } catch (error) {
       console.error("Error submitting form:", error)
@@ -231,7 +248,7 @@ export default function QuoteRequestPage() {
 
   // Handle return to calculator
   const handleReturn = () => {
-    router.push("/")
+    router.push("/calculator")
   }
 
   // Get fence type display name
@@ -266,11 +283,11 @@ export default function QuoteRequestPage() {
   const getItemIcon = (itemName, category) => {
     switch (category) {
       case "panels":
-        return <Fence size={16} className="mr-2 text-[#b82429]" />
+        return <Grid size={16} className="mr-2 text-[#b82429]" />
       case "feet":
         return <Footprints size={16} className="mr-2 text-[#b82429]" />
       case "connectors":
-        return <Link size={16} className="mr-2 text-[#b82429]" />
+        return <LinkIcon size={16} className="mr-2 text-[#b82429]" />
       case "supports":
         return <CornerRightDown size={16} className="mr-2 text-[#b82429]" />
       case "delivery":
@@ -285,36 +302,40 @@ export default function QuoteRequestPage() {
         return <Shield size={16} className="mr-2 text-[#b82429] fill-[#f8d7d9]" />
       default:
         // Fallback based on item name for backward compatibility
-        if (itemName.includes("Panel") || itemName.includes("Builders")) {
-          return <Fence size={16} className="mr-2 text-[#b82429]" />
-        } else if (itemName.includes("Feet") || itemName.includes("feet")) {
+        if (itemName?.includes("Panel") || itemName?.includes("Builders")) {
+          return <Grid size={16} className="mr-2 text-[#b82429]" />
+        } else if (itemName?.includes("Feet") || itemName?.includes("feet")) {
           return <Footprints size={16} className="mr-2 text-[#b82429]" />
-        } else if (itemName.includes("Stay") || itemName.includes("Brace")) {
+        } else if (itemName?.includes("Stay") || itemName?.includes("Brace")) {
           return <CornerRightDown size={16} className="mr-2 text-[#b82429]" />
-        } else if (itemName.includes("Clamp")) {
-          return <Link size={16} className="mr-2 text-[#b82429]" />
-        } else if (itemName.includes("Delivery")) {
+        } else if (itemName?.includes("Clamp")) {
+          return <LinkIcon size={16} className="mr-2 text-[#b82429]" />
+        } else if (itemName?.includes("Delivery")) {
           return <Truck size={16} className="mr-2 text-[#b82429]" />
-        } else if (itemName.includes("Installation")) {
+        } else if (itemName?.includes("Installation")) {
           return <DollarSign size={16} className="mr-2 text-[#b82429]" />
         }
-        return <Fence size={16} className="mr-2 text-[#b82429]" />
+        return <Grid size={16} className="mr-2 text-[#b82429]" />
     }
   }
 
   // If data is not loaded yet, show loading
   if (!dataLoaded && !dataError) {
     return (
-      <div className={`w-full min-h-screen ${lato.className}`} style={{ backgroundColor: "#F1EFEA" }}>
-        <div className="w-full p-3 py-6">
-          <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm">
-            <div className="flex items-center mb-4 pb-2 border-b border-gray-100">
-              <h2 className="font-bold text-xl">Request a Quote</h2>
+      <div className="w-full min-h-screen font-sans" style={{ backgroundColor: "#F1EFEA" }}>
+        <div className="container mx-auto p-6 py-12">
+          <h1 className="font-heading text-4xl font-semibold text-center mb-4">Request a Quote</h1>
+          <div className="text-center mb-8">
+            <Link href="/calculator" className="text-[#b82429]">
+              I have it figured out calculate my costs →
+            </Link>
+          </div>
+
+          <div className="bg-white p-8 rounded-lg shadow-sm max-w-2xl mx-auto">
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#b82429]"></div>
             </div>
-            <div className="p-6 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#b82429] mx-auto mb-4"></div>
-              <p>Loading quote details...</p>
-            </div>
+            <p className="text-center mt-4">Loading quote details...</p>
           </div>
         </div>
       </div>
@@ -324,31 +345,22 @@ export default function QuoteRequestPage() {
   // If there was an error, this will show briefly before redirecting
   if (dataError) {
     return (
-      <div className={`w-full min-h-screen ${lato.className}`} style={{ backgroundColor: "#F1EFEA" }}>
-        <div className="w-full p-3 py-6">
-          <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm">
-            <div className="flex items-center mb-4 pb-2 border-b border-gray-100">
-              <h2 className="font-bold text-xl">Request a Quote</h2>
+      <div className="w-full min-h-screen font-sans" style={{ backgroundColor: "#F1EFEA" }}>
+        <div className="container mx-auto p-6 py-12">
+          <h1 className="font-heading text-4xl font-semibold text-center mb-4">Request a Quote</h1>
+          <div className="text-center mb-8">
+            <Link href="/calculator" className="text-[#b82429]">
+              I have it figured out calculate my costs →
+            </Link>
+          </div>
+
+          <div className="bg-white p-8 rounded-lg shadow-sm max-w-2xl mx-auto">
+            <div className="text-red-500 flex justify-center mb-4">
+              <AlertCircle size={48} />
             </div>
-            <div className="p-6 text-center">
-              <div className="text-red-500 mb-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-12 w-12 mx-auto"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-              </div>
-              <p className="text-lg font-medium mb-2">Error Loading Quote Data</p>
-              <p className="mb-4">Unable to load quote details. Redirecting back to calculator...</p>
+            <p className="text-lg font-medium text-center mb-2">Error Loading Quote Data</p>
+            <p className="text-center mb-4">Unable to load quote details. Redirecting back to calculator...</p>
+            <div className="flex justify-center">
               <Button
                 onClick={handleReturn}
                 className="bg-[#b82429] hover:bg-[#9e1f23] text-white py-2 px-4 text-sm font-medium rounded-md"
@@ -363,427 +375,363 @@ export default function QuoteRequestPage() {
   }
 
   return (
-    <div className={`w-full min-h-screen ${lato.className}`} style={{ backgroundColor: "#F8F8F8" }}>
-      <style jsx>{`
-        /* Styling for range inputs */
-        input[type="range"] {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 100%;
-          height: 6px;
--radius: 5px;
-          background: #e2e8f0; /* Default gray background */
-          outline: none;
-        }
+    <div className="w-full min-h-screen font-sans" style={{ backgroundColor: "#F1EFEA" }}>
+      {showSuccess ? (
+        <div className="container mx-auto p-6 py-12">
+          <h1 className="font-heading text-4xl font-semibold text-center mb-4">Quote Submitted</h1>
 
-        /* Webkit browsers (Chrome, Safari) */
-        input[type="range"]::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          background: #b82429;
-          cursor: pointer;
-          margin-top: -6px; /* Centers the thumb on the track */
-        }
-
-        /* Firefox */
-        input[type="range"]::-moz-range-thumb {
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          background: #b82429;
-          cursor: pointer;
-          border: none;
-        }
-
-        input[type="range"]::-moz-range-progress {
-          background: #b82429;
-          height: 6px;
-          border-radius: 5px;
-        }
-
-        /* Edge/IE */
-        input[type="range"]::-ms-thumb {
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          background: #b82429;
-          cursor: pointer;
-        }
-
-        input[type="range"]::-ms-fill-lower {
-          background: #b82429;
-          border
-      `}</style>
-      <div className="w-full p-3 py-6">
-        <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm">
-          {showSuccess ? (
-            <div className="text-center p-6">
+          <div className="bg-white p-8 md:p-12 text-center rounded-lg shadow-sm max-w-2xl mx-auto">
+            <div className="inline-flex items-center justify-center w-28 h-28 rounded-full bg-green-100 mb-6 animate-bounce-slow">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-16 w-16 mx-auto text-green-500"
+                className="h-16 w-16 text-green-600"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
               </svg>
-              <p className="text-lg font-medium mb-2">Quote Request Submitted Successfully!</p>
-              <p className="mb-4">You will be redirected back to the calculator...</p>
             </div>
-          ) : (
-            <>
-              <div className="flex items-center mb-4 pb-2 border-b border-gray-100">
-                <h2 className="font-bold text-xl">Request a Quote</h2>
-              </div>
-              <form id="quote-form" onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Personal Details */}
-                <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                    First Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#b82429] focus:ring-[#b82429] sm:text-sm"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                    Last Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#b82429] focus:ring-[#b82429] sm:text-sm"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#b82429] focus:ring-[#b82429] sm:text-sm"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                    Phone *
-                  </label>
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#b82429] focus:ring-[#b82429] sm:text-sm"
-                    required
-                  />
+            <h2 className="text-3xl font-bold mb-4 text-[#b82429]">THANK YOU!</h2>
+            <h3 className="text-2xl font-semibold mb-4">Your Quote Request Has Been Submitted</h3>
+            <div className="bg-gray-50 p-4 rounded-lg mb-6 max-w-lg mx-auto">
+              <p className="text-gray-700 mb-3">
+                We've received your request and our team will review your quote details promptly.
+              </p>
+              <p className="text-gray-700 font-medium">
+                A confirmation has been sent to your email. We'll be in touch within 24 hours.
+              </p>
+            </div>
+            <p className="text-gray-500">Redirecting back to calculator in a moment...</p>
+          </div>
+        </div>
+      ) : (
+        <div className="container mx-auto p-6 py-12">
+          <h1 className="font-heading text-4xl font-semibold text-center mb-4">Request a Quote</h1>
+          <div className="text-center mb-8">
+            <Link href="/calculator" className="text-[#b82429]">
+              I have it figured out calculate my costs →
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            {/* Left Column - Quote Summary */}
+            <div>
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden h-full">
+                {/* Header */}
+                <div className="border-b border-gray-200 p-6">
+                  <h2 className="font-heading text-xl font-semibold text-gray-900">Quote Summary</h2>
                 </div>
 
-                {/* Company Details */}
-                <div>
-                  <label htmlFor="company" className="block text-sm font-medium text-gray-700">
-                    Company
-                  </label>
-                  <input
-                    type="text"
-                    id="company"
-                    name="company"
-                    value={formData.company}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#b82429] focus:ring-[#b82429] sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                    Address *
-                  </label>
-                  <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#b82429] focus:ring-[#b82429] sm:text-sm"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="city" className="block text-sm font-medium text-gray-700">
-                    City *
-                  </label>
-                  <input
-                    type="text"
-                    id="city"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#b82429] focus:ring-[#b82429] sm:text-sm"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="state" className="block text-sm font-medium text-gray-700">
-                    State *
-                  </label>
-                  <input
-                    type="text"
-                    id="state"
-                    name="state"
-                    value={formData.state}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#b82429] focus:ring-[#b82429] sm:text-sm"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="zip" className="block text-sm font-medium text-gray-700">
-                    Zip *
-                  </label>
-                  <input
-                    type="text"
-                    id="zip"
-                    name="zip"
-                    value={formData.zip}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#b82429] focus:ring-[#b82429] sm:text-sm"
-                    required
-                  />
-                </div>
+                <div className="p-6">
+                  {/* Quote Details Section */}
+                  <div className="space-y-3 mb-6">
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Option</span>
+                      <span className="font-medium text-gray-900">
+                        {quoteDetails.selectedOption === "purchase" ? "Purchase" : "Hire"}
+                      </span>
+                    </div>
 
-                {/* Message */}
-                <div className="md:col-span-2">
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700">
-                    Message
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={3}
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#b82429] focus:ring-[#b82429] sm:text-sm"
-                  />
-                </div>
+                    <div className="flex items-start justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Fence Type</span>
+                      <span className="font-medium text-gray-900 text-right max-w-[60%]">
+                        {getFenceTypeDisplayName(quoteDetails.selectedFenceType)}
+                      </span>
+                    </div>
 
-                {/* Quote Details */}
-                <div className="md:col-span-2">
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Quote Summary</h3>
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Item
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Quantity
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                          >
-                            Price
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {quoteDetails.itemsList.map((item, index) => (
-                          <tr key={index}>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                {getItemIcon(item.name, item.category)}
-                                <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                    <div className="flex items-start justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Feet Option</span>
+                      <span className="font-medium text-gray-900 text-right max-w-[60%]">
+                        {getFeetOptionDisplayName(quoteDetails.selectedFeetOption)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                      <span className="text-gray-600">Meters Required</span>
+                      <span className="font-medium text-gray-900">{quoteDetails.metersRequired}m</span>
+                    </div>
+                  </div>
+
+                  {/* Item List Section */}
+                  <div className="mb-6">
+                    <h3 className="font-heading text-base font-medium text-gray-900 mb-4">Item List</h3>
+
+                    {Array.isArray(quoteDetails.itemsList) && quoteDetails.itemsList.length > 0 ? (
+                      <div className="border border-gray-200 rounded-md overflow-hidden">
+                        <div className="grid grid-cols-[auto_50px_90px] text-xs font-medium text-gray-500 bg-gray-50 border-b border-gray-200">
+                          <div className="p-3">Item</div>
+                          <div className="p-3 text-center">Qty</div>
+                          <div className="p-3 text-right">Price</div>
+                        </div>
+                        <div>
+                          {quoteDetails.itemsList
+                            .filter((item) => !item.name.includes("Hire Duration") && !item.name.includes("Discount:"))
+                            .map((item, index) => (
+                              <div
+                                key={index}
+                                className={`grid grid-cols-[auto_50px_90px] items-center border-b border-gray-200 last:border-b-0 ${
+                                  index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                                }`}
+                              >
+                                <div className="p-3 text-sm flex items-center">
+                                  {getItemIcon(item.name, item.category)}
+                                  {item.name}
+                                </div>
+                                <div className="p-3 text-center text-sm">{item.quantity}</div>
+                                <div className="p-3 pr-4 text-right text-sm">
+                                  {item.isTBC
+                                    ? "TBC"
+                                    : item.priceDisplay
+                                      ? item.priceDisplay
+                                      : `$${item.price.toFixed(2)}`}
+                                </div>
                               </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-500">{item.quantity}</div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right">
-                              <div className="text-sm text-gray-500">${formatPrice(item.price * item.quantity)}</div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Fence Details */}
-                <div className="md:col-span-2">
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Fence Details</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label htmlFor="fenceType" className="block text-sm font-medium text-gray-700">
-                        Fence Type
-                      </label>
-                      <input
-                        type="text"
-                        id="fenceType"
-                        name="fenceType"
-                        value={getFenceTypeDisplayName(quoteDetails.selectedFenceType)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#b82429] focus:ring-[#b82429] sm:text-sm"
-                        readOnly
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="feetOption" className="block text-sm font-medium text-gray-700">
-                        Feet Option
-                      </label>
-                      <input
-                        type="text"
-                        id="feetOption"
-                        name="feetOption"
-                        value={getFeetOptionDisplayName(quoteDetails.selectedFeetOption)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#b82429] focus:ring-[#b82429] sm:text-sm"
-                        readOnly
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor="metersRequired" className="block text-sm font-medium text-gray-700">
-                        Meters Required
-                      </label>
-                      <input
-                        type="range"
-                        id="metersRequired"
-                        name="metersRequired"
-                        min="10"
-                        max="200"
-                        step="1"
-                        value={quoteDetails.metersRequired}
-                        onChange={(e) => {
-                          setQuoteDetails({ ...quoteDetails, metersRequired: e.target.value })
-                          updateSliderBackground(e)
-                        }}
-                        className="mt-2"
-                      />
-                      <div className="text-sm text-gray-500">{quoteDetails.metersRequired} meters</div>
-                    </div>
-                    <div>
-                      <label htmlFor="hireDuration" className="block text-sm font-medium text-gray-700">
-                        Hire Duration
-                      </label>
-                      <div className="flex items-center">
-                        <input
-                          type="range"
-                          id="hireDuration"
-                          name="hireDuration"
-                          min="1"
-                          max="52"
-                          step="1"
-                          value={quoteDetails.hireDuration}
-                          onChange={(e) => {
-                            setQuoteDetails({ ...quoteDetails, hireDuration: e.target.value })
-                            updateSliderBackground(e)
-                          }}
-                          className="mt-2"
-                        />
-                        <select
-                          id="durationUnit"
-                          name="durationUnit"
-                          value={quoteDetails.durationUnit}
-                          onChange={(e) => setQuoteDetails({ ...quoteDetails, durationUnit: e.target.value })}
-                          className="ml-2 mt-1 block rounded-md border-gray-300 shadow-sm focus:border-[#b82429] focus:ring-[#b82429] sm:text-sm"
-                        >
-                          <option value="weeks">Weeks</option>
-                          <option value="months">Months</option>
-                        </select>
+                            ))}
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {quoteDetails.hireDuration} {quoteDetails.durationUnit}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Total Section */}
-                <div className="flex justify-between items-center py-3 mb-0 border-t border-gray-200 mt-1">
-                  <span className="font-semibold text-gray-900">Total (Incl. GST)</span>
-                  <span className="font-semibold text-xl text-[#b82429]">${formatPrice(quoteDetails.totalPrice)}</span>
-                </div>
-
-                {/* Terms and Conditions */}
-                <div className="md:col-span-2 flex items-center">
-                  <input
-                    type="checkbox"
-                    id="terms"
-                    name="terms"
-                    className="h-4 w-4 text-[#b82429] focus:ring-[#b82429] border-gray-300 rounded"
-                    checked={termsAccepted}
-                    onChange={(e) => setTermsAccepted(e.target.checked)}
-                    required
-                  />
-                  <label htmlFor="terms" className="ml-2 block text-sm text-gray-900">
-                    I agree to the{" "}
-                    <a href="#" className="text-[#b82429]">
-                      terms and conditions
-                    </a>{" "}
-                    *
-                  </label>
-                </div>
-
-                {/* Disclaimer as a simple text note */}
-                <div className="mt-3 p-3 text-xs text-gray-500 bg-white rounded-lg shadow-sm border-t border-gray-100">
-                  <p>
-                    This calculation is a guide only and based on the limited information provided, excluding any fees
-                    or charges. It does not constitute a formal quote, nor a suggestion or recommendation of any
-                    product.
-                  </p>
-                </div>
-
-                {/* Bottom Buttons - Outside the grid to span full width */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 w-full">
-                  <Button
-                    type="button"
-                    onClick={handleReturn}
-                    className="bg-[#b82429] hover:bg-[#9e1f23] text-white py-4 px-6 text-base font-medium rounded-md w-full flex items-center justify-center"
-                  >
-                    Return to Calculator
-                  </Button>
-                  <Button
-                    type="submit"
-                    form="quote-form"
-                    disabled={isSubmitting}
-                    className="border-2 border-[#b82429] text-[#b82429] bg-white hover:bg-gray-50 py-4 px-6 text-base font-medium rounded-md w-full flex items-center justify-center"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#b82429] mr-2"></div>
-                        Processing...
-                      </>
                     ) : (
-                      "Submit Quote Request"
+                      <div className="bg-gray-50 p-4 rounded-md text-center text-gray-500">
+                        <p>No items to display. Please return to calculator.</p>
+                      </div>
                     )}
-                  </Button>
+                  </div>
+
+                  {/* Total Section */}
+                  <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-0">
+                    <span className="font-heading font-semibold text-gray-900">Total (Incl. GST)</span>
+                    <span className="font-heading font-semibold text-xl text-[#b82429]">
+                      ${formatPrice(quoteDetails.totalPrice)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column - Form */}
+            <div>
+              <form id="quote-form" onSubmit={handleSubmit} className="space-y-6">
+                {/* Personal Information */}
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h2 className="font-heading text-xl font-semibold mb-4 text-gray-900 flex items-center">
+                    <User size={20} className="mr-2 text-[#b82429]" />
+                    Personal Information
+                  </h2>
+
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">
+                        First Name <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        required
+                        type="text"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={handleInputChange}
+                        className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">
+                        Last Name <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        required
+                        type="text"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={handleInputChange}
+                        className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">
+                        Email <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        required
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">
+                        Phone <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        required
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Company</label>
+                    <Input
+                      type="text"
+                      name="company"
+                      value={formData.company}
+                      onChange={handleInputChange}
+                      className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Address Information */}
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h2 className="font-heading text-xl font-semibold mb-4 text-gray-900 flex items-center">
+                    <MapPin size={20} className="mr-2 text-[#b82429]" />
+                    Address Information
+                  </h2>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-600 mb-1">
+                      Address <span className="text-red-500">*</span>
+                    </label>
+                    <Input
+                      required
+                      type="text"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                      placeholder="Street address"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">
+                        City <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        required
+                        type="text"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleInputChange}
+                        className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">
+                        State <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        required
+                        type="text"
+                        name="state"
+                        value={formData.state}
+                        onChange={handleInputChange}
+                        className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">
+                        Zip Code <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        required
+                        type="text"
+                        name="zip"
+                        value={formData.zip}
+                        onChange={handleInputChange}
+                        className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Information */}
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h2 className="font-heading text-xl font-semibold mb-4 text-gray-900 flex items-center">
+                    <FileText size={20} className="mr-2 text-[#b82429]" />
+                    Additional Information
+                  </h2>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-600 mb-1">
+                      Special Requirements or Notes
+                    </label>
+                    <Textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleInputChange}
+                      rows={3}
+                      className="border border-gray-200 rounded-md w-full text-sm bg-white"
+                      placeholder="Please provide any additional information that might help us with your quote..."
+                    />
+                  </div>
+
+                  <div className="flex items-start">
+                    <div className="flex items-center h-5">
+                      <input
+                        id="terms"
+                        type="checkbox"
+                        checked={termsAccepted}
+                        onChange={() => setTermsAccepted(!termsAccepted)}
+                        required
+                        className="w-4 h-4 border border-[#b82429] rounded bg-red-50 focus:ring-3 focus:ring-red-300 accent-[#b82429]"
+                      />
+                    </div>
+                    <label htmlFor="terms" className="ml-2 text-xs font-medium text-gray-600">
+                      I agree to the{" "}
+                      <a href="#" className="text-[#b82429] hover:underline">
+                        terms and conditions
+                      </a>
+                    </label>
+                  </div>
                 </div>
               </form>
-            </>
-          )}
+            </div>
+          </div>
+
+          {/* Bottom Buttons - Outside the grid to span full width */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 w-full">
+            <Button
+              type="button"
+              onClick={handleReturn}
+              className="bg-[#b82429] hover:bg-[#9e1f23] text-white py-4 px-[34px] text-base font-medium rounded-md w-full flex items-center justify-center"
+            >
+              <ArrowLeft className="mr-2 h-5 w-5" />
+              Return to Calculator
+            </Button>
+            <Button
+              type="submit"
+              form="quote-form"
+              disabled={isSubmitting}
+              className="border-2 border-[#b82429] text-[#b82429] bg-white hover:bg-gray-50 py-4 px-[34px] text-base font-medium rounded-md w-full flex items-center justify-center"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#b82429] mr-2"></div>
+                  Processing...
+                </>
+              ) : (
+                "Submit Quote Request"
+              )}
+            </Button>
+          </div>
+
+          {/* Single set of pagination dots */}
+          <div className="flex justify-center space-x-2 mt-8">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className={`w-3 h-3 rounded-full ${i === 4 ? "bg-[#b82429]" : "bg-gray-300"}`} />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

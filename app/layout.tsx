@@ -1,29 +1,41 @@
 import type React from "react"
-import "./globals.css"
 import type { Metadata } from "next"
+import "./globals.css"
+import IframeHandler from "@/components/iframe-handler"
+import { Titillium_Web, Open_Sans } from "next/font/google"
+
+const titilliumWeb = Titillium_Web({
+  subsets: ["latin"],
+  weight: ["200", "300", "400", "600", "700", "900"],
+  variable: "--font-titillium-web",
+})
+
+const openSans = Open_Sans({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-open-sans",
+})
 
 export const metadata: Metadata = {
-  title: "Contact Form",
-  description: "Contact form for your website",
-    generator: 'v0.dev'
+  title: "Fencing Calculator",
+  description: "Calculate the cost of your fencing project",
+  generator: "v0.dev",
 }
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode
-}) {
+}>) {
   return (
     <html lang="en">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
+        <meta name="referrer" content="origin" />
       </head>
-      <body>{children}</body>
+      <body className={`${titilliumWeb.variable} ${openSans.variable} font-sans`}>
+        <IframeHandler />
+        {children}
+      </body>
     </html>
   )
 }
