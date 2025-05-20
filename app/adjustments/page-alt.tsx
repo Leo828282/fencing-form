@@ -102,7 +102,7 @@ export default function AdjustmentsPageAlt() {
   return (
     <div
       className={`min-h-screen flex flex-col ${barlow.variable} ${roboto.variable}`}
-      style={{ backgroundColor: "#F1EFEA" }}
+      style={{ backgroundColor: "white" }}
     >
       {/* Back button */}
       <div className="absolute top-4 left-4 md:top-8 md:left-8">

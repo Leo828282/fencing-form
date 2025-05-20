@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import FencingCalculator from "@/components/calculator/fencing-calculator"
-import BookingModal from "@/booking-modal"
 import { Lato } from "next/font/google"
 
 // Initialize the Lato font
@@ -15,28 +14,19 @@ const lato = Lato({
 })
 
 export default function CalculatorPage() {
-  const [showBookingModal, setShowBookingModal] = useState(false)
   const [calculatorData, setCalculatorData] = useState(null)
   const router = useRouter()
 
-  // Handle booking request with error handling
+  // Handle booking request - with fallback options
   const handleBookingRequest = () => {
-    try {
-      // Instead of showing the modal, navigate to the book-a-call page
-      router.push("/book-a-call")
-    } catch (error) {
-      console.error("Navigation error:", error)
-      // Fallback to modal if navigation fails
-      setShowBookingModal(true)
-    }
-  }
+    console.log("Booking request initiated from calculator page")
 
-  const handleCloseBookingModal = () => {
-    setShowBookingModal(false)
+    // Use direct navigation for reliability
+    window.location.href = "/book-a-call"
   }
 
   return (
-    <div className={`min-h-screen flex flex-col ${lato.className}`} style={{ backgroundColor: "#F1EFEA" }}>
+    <div className={`min-h-screen flex flex-col ${lato.className}`} style={{ backgroundColor: "white" }}>
       <div className="flex-1 flex flex-col items-center p-4 md:p-8">
         {/* Main content */}
         <div className="w-full max-w-7xl">
@@ -52,8 +42,6 @@ export default function CalculatorPage() {
           />
         </div>
       </div>
-
-      {showBookingModal && <BookingModal onClose={handleCloseBookingModal} calculatorData={calculatorData} />}
     </div>
   )
 }

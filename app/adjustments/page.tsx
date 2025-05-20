@@ -2,16 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Barlow } from "next/font/google"
 import Link from "next/link"
-
-// Initialize the Barlow font
-const barlow = Barlow({
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
-  display: "swap",
-  variable: "--font-barlow",
-})
 
 // Duration unit options with minimum values
 const DURATION_UNITS = [
@@ -99,12 +90,12 @@ export default function AdjustmentsPage() {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col ${barlow.variable}`} style={{ backgroundColor: "#F1EFEA" }}>
+    <div className="min-h-screen flex flex-col bg-white">
       <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
         {/* Header section */}
         <div className="text-center mb-8">
-          <h1 className="text-[48px] font-bold mb-2 text-black">Adjust for what you need!</h1>
-          <p className="text-gray-600">
+          <h1 className="text-[48px] font-bold mb-2 font-heading text-black">Adjust for what you need!</h1>
+          <p className="text-gray-600 font-sans">
             <button onClick={handleSkipToCalculator} className="text-gray-600 hover:text-[#b82429]">
               I have it figured out calculate my costs ---&gt;
             </button>
@@ -115,9 +106,9 @@ export default function AdjustmentsPage() {
         <div className="w-full max-w-md">
           {/* Meters of Fencing Required */}
           <div className="mb-8">
-            <div className="font-bold mb-2">Meters of Fencing Required</div>
+            <div className="font-bold mb-2 font-heading">Meters of Fencing Required</div>
             <div className="bg-gray-100 p-4 rounded mb-3">
-              <div className="text-lg">{metersRequired}</div>
+              <div className="text-lg font-sans">{metersRequired}</div>
             </div>
             <div className="relative h-2 bg-gray-300 rounded-full">
               <div
@@ -143,13 +134,13 @@ export default function AdjustmentsPage() {
           {selectedOption === "hire" && (
             <div className="mb-8">
               <div className="flex justify-between items-center mb-2">
-                <div className="font-bold">Hire Duration</div>
-                <div className="text-sm">
+                <div className="font-bold font-heading">Hire Duration</div>
+                <div className="text-sm font-sans">
                   Unit:
                   <select
                     value={durationUnit || "weeks"}
                     onChange={(e) => setDurationUnit(e.target.value)}
-                    className="ml-1 border-none bg-transparent"
+                    className="ml-1 border-none bg-transparent font-sans"
                   >
                     <option value="weeks">Weeks ▼</option>
                     <option value="days">Days ▼</option>
@@ -158,7 +149,7 @@ export default function AdjustmentsPage() {
                 </div>
               </div>
               <div className="bg-gray-100 p-4 rounded mb-3">
-                <div className="text-lg">{hireDuration}</div>
+                <div className="text-lg font-sans">{hireDuration}</div>
               </div>
               <div className="relative h-2 bg-gray-300 rounded-full">
                 <div
@@ -183,7 +174,7 @@ export default function AdjustmentsPage() {
 
           {/* Back button */}
           <div className="flex justify-center mt-6 mb-6">
-            <Link href="/purchase-options" className="flex items-center text-gray-600 hover:text-[#b82429]">
+            <Link href="/purchase-options" className="flex items-center text-gray-600 hover:text-[#b82429] font-sans">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 mr-1"
@@ -201,7 +192,7 @@ export default function AdjustmentsPage() {
           <div className="flex justify-center mb-12">
             <button
               onClick={handleNext}
-              className="bg-[#b82429] text-white px-6 py-2 font-medium hover:bg-[#a01f24] transition-colors"
+              className="bg-[#b82429] text-white px-6 py-2 font-medium hover:bg-[#a01f24] transition-colors font-sans"
             >
               NEXT &gt;
             </button>

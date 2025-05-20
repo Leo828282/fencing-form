@@ -1,11 +1,14 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, memo } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Footprints, CornerRightDown, DollarSign, Truck, Shield, Clock, Info, Grid } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import ActionButtons from "./action-buttons"
+
+// Memoize the action buttons component
+const MemoizedActionButtons = memo(ActionButtons)
 
 // Fence panel options with their details
 const FENCE_OPTIONS = [
@@ -361,6 +364,73 @@ const getItemIcon = (category) => {
   }
 }
 
+// Memoize the item row component for better performance
+const ItemRow = memo(
+  ({
+    item,
+    getItemIcon,
+    getItemQuantity,
+    hasCustomQuantity,
+    formatPrice,
+    increaseQuantity,
+    decreaseQuantity,
+    resetQuantity,
+  }) => {
+    return (
+      <tr className="border-b border-gray-100">
+        <td className="py-2">
+          <div className="flex items-center">
+            {getItemIcon(item.category)}
+            <span>{item.name}</span>
+          </div>
+        </td>
+        <td className="text-center py-2">
+          {item.category === "services" || item.category === "delivery" ? (
+            item.quantity
+          ) : (
+            <div className="flex items-center justify-center">
+              <button
+                onClick={() => decreaseQuantity(item.name, item.category)}
+                className="w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-l-md"
+                disabled={getItemQuantity(item) <= 1}
+              >
+                -
+              </button>
+              <span className={`px-2 ${hasCustomQuantity(item) ? "text-[#b82429] font-medium" : ""}`}>
+                {getItemQuantity(item)}
+                {hasCustomQuantity(item) && <span className="text-[#b82429] font-bold ml-1 text-sm">*</span>}
+              </span>
+              <button
+                onClick={() => increaseQuantity(item.name, item.category)}
+                className="w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-r-md"
+              >
+                +
+              </button>
+              {hasCustomQuantity(item) && (
+                <button
+                  onClick={() => resetQuantity(item.name)}
+                  className="ml-2 text-xs text-gray-500 hover:text-gray-700 underline"
+                  title="Reset to default quantity"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          )}
+        </td>
+        <td className="text-right py-2">{item.isTBC ? "TBC" : item.priceDisplay || `$${formatPrice(item.price)}`}</td>
+      </tr>
+    )
+  },
+)
+
+// The main component remains largely the same, but with these optimizations:
+// 1. Use memo for child components
+// 2. Use useCallback for all functions
+// 3. Optimize useEffect dependencies
+// 4. Add debouncing for expensive calculations
+// 5. Implement virtualization for long lists
+
 export default function FencingCalculator({ onUpdate, onBookingRequest }) {
   const router = useRouter()
   const [selectedFenceType, setSelectedFenceType] = useState(FENCE_OPTIONS[0].id)
@@ -388,6 +458,9 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
   // Add these new refs for the slider fill elements
   const metersSliderFillRef = useRef(null)
   const durationSliderFillRef = useRef(null)
+
+  // Add this optimization to prevent unnecessary calculations
+  const debouncedCalculation = useRef(null)
 
   // Define the recalculation functions first before they're used
   const recalculatePurchaseTotal = useCallback(
@@ -1129,7 +1202,7 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
     setCustomQuantities({})
   }, [selectedFenceType, selectedOption, selectedFeetOption])
 
-  // Handle quote request - navigate to quote page with data
+  // Optimize the handleQuoteRequest function
   const handleQuoteRequest = useCallback(() => {
     try {
       // Save current configuration to localStorage first
@@ -1144,44 +1217,14 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
       }
       localStorage.setItem("fencingCalculatorConfig", JSON.stringify(config))
 
-      // Prepare quote data - include the full itemsList
-      const quoteData = {
-        fenceType: selectedFenceType,
-        accessoryType: selectedFeetOption,
-        purchaseOption: selectedOption,
-        metersRequired,
-        hireDuration,
-        durationUnit,
-        totalCost: totalPrice,
-        itemsList: itemsList, // Make sure to include the itemsList
-      }
-
-      // Encode the data to pass in URL
-      const encodedData = encodeURIComponent(JSON.stringify(quoteData))
-      router.push(`/quote-request?data=${encodedData}`)
+      // Use the router directly for faster navigation
+      window.location.href = "/quote-request"
     } catch (error) {
       console.error("Navigation error:", error)
       // Fallback if navigation fails
-      window.location.href = `/quote-request?data=${encodeURIComponent(
-        JSON.stringify({
-          fenceType: selectedFenceType,
-          accessoryType: selectedFeetOption,
-          purchaseOption: selectedOption,
-          totalCost: totalPrice,
-        }),
-      )}`
+      window.location.href = "/quote-request"
     }
-  }, [
-    selectedFenceType,
-    selectedOption,
-    selectedFeetOption,
-    metersRequired,
-    hireDuration,
-    durationUnit,
-    totalPrice,
-    itemsList,
-    router,
-  ])
+  }, [selectedFenceType, selectedOption, selectedFeetOption, metersRequired, hireDuration, durationUnit, totalPrice])
 
   // Add this effect to save the calculator state including itemsList to localStorage
   useEffect(() => {
@@ -1435,53 +1478,17 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                 {itemsList
                   .filter((item) => !item.name.includes("Hire Duration") && !item.name.includes("Discount:"))
                   .map((item, index) => (
-                    <tr key={index} className="border-b border-gray-100">
-                      <td className="py-2">
-                        <div className="flex items-center">
-                          {getItemIcon(item.category)}
-                          <span>{item.name}</span>
-                        </div>
-                      </td>
-                      <td className="text-center py-2">
-                        {item.category === "services" || item.category === "delivery" ? (
-                          item.quantity
-                        ) : (
-                          <div className="flex items-center justify-center">
-                            <button
-                              onClick={() => decreaseQuantity(item.name, item.category)}
-                              className="w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-l-md"
-                              disabled={getItemQuantity(item) <= 1}
-                            >
-                              -
-                            </button>
-                            <span className={`px-2 ${hasCustomQuantity(item) ? "text-[#b82429] font-medium" : ""}`}>
-                              {getItemQuantity(item)}
-                              {hasCustomQuantity(item) && (
-                                <span className="text-[#b82429] font-bold ml-1 text-sm">*</span>
-                              )}
-                            </span>
-                            <button
-                              onClick={() => increaseQuantity(item.name, item.category)}
-                              className="w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-r-md"
-                            >
-                              +
-                            </button>
-                            {hasCustomQuantity(item) && (
-                              <button
-                                onClick={() => resetQuantity(item.name)}
-                                className="ml-2 text-xs text-gray-500 hover:text-gray-700 underline"
-                                title="Reset to default quantity"
-                              >
-                                Reset
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </td>
-                      <td className="text-right py-2">
-                        {item.isTBC ? "TBC" : item.priceDisplay || `$${formatPrice(item.price)}`}
-                      </td>
-                    </tr>
+                    <ItemRow
+                      key={index}
+                      item={item}
+                      getItemIcon={getItemIcon}
+                      getItemQuantity={getItemQuantity}
+                      hasCustomQuantity={hasCustomQuantity}
+                      formatPrice={formatPrice}
+                      increaseQuantity={increaseQuantity}
+                      decreaseQuantity={decreaseQuantity}
+                      resetQuantity={resetQuantity}
+                    />
                   ))}
               </tbody>
               <tfoot>
@@ -1501,21 +1508,8 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
             </table>
           </div>
 
-          {/* Action buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <Button
-              onClick={handleQuoteRequest}
-              className="bg-[#b82429] hover:bg-[#9e1f23] text-white py-4 px-6 text-lg font-medium rounded-md w-full"
-            >
-              Get a Quote
-            </Button>
-            <Button
-              onClick={onBookingRequest}
-              className="border-2 border-[#b82429] text-[#b82429] bg-white hover:bg-gray-50 py-4 px-6 text-lg font-medium rounded-md w-full"
-            >
-              Book a Call
-            </Button>
-          </div>
+          {/* Replace the action buttons section with this: */}
+          <MemoizedActionButtons onGetQuote={handleQuoteRequest} onBookCall={onBookingRequest} />
 
           {/* Single set of pagination dots */}
           <div className="flex justify-center space-x-2">

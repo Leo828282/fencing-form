@@ -92,7 +92,7 @@ export default function AccessoriesSelection() {
                     selectedAccessory === option.id || hoveredAccessory === option.id ? "opacity-0" : "opacity-100"
                   }`}
                 >
-                  <div className={`px-2 ${option.textSize}`}>{option.shortName}</div>
+                  <div className={`px-2 ${option.textSize} font-sans`}>{option.shortName}</div>
                 </div>
 
                 {/* Hover overlay */}
@@ -103,7 +103,7 @@ export default function AccessoriesSelection() {
                       : "opacity-0 pointer-events-none"
                   }`}
                 >
-                  <div className="text-white font-bold text-2xl tracking-wide">SELECT OPTION</div>
+                  <div className="text-white font-bold text-2xl tracking-wide font-heading">SELECT OPTION</div>
                 </div>
 
                 {/* Loading spinner */}

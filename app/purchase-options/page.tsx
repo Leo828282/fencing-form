@@ -4,22 +4,6 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Loader, ArrowLeft } from "lucide-react"
-import { Barlow, Roboto } from "next/font/google"
-
-// Initialize the fonts
-const barlow = Barlow({
-  subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
-  display: "swap",
-  variable: "--font-barlow",
-})
-
-const roboto = Roboto({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  display: "swap",
-  variable: "--font-roboto",
-})
 
 // Purchase/Hire options
 const OPTIONS = [
@@ -80,18 +64,15 @@ export default function PurchaseOptions() {
   }
 
   return (
-    <div
-      className={`min-h-screen flex flex-col ${barlow.variable} ${roboto.variable}`}
-      style={{ backgroundColor: "#F1EFEA" }}
-    >
+    <div className="min-h-screen flex flex-col bg-white">
       <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
         {/* Header section - exactly matching the image */}
         <div className="text-center mb-16 mt-16">
-          <h1 className="text-[48px] font-bold mb-4 font-barlow text-[#222] leading-tight">Select an option!</h1>
+          <h1 className="text-[48px] font-bold mb-4 font-heading text-[#222] leading-tight">Select an option!</h1>
           <div className="flex items-center justify-center">
             <button
               onClick={handleSkipToCalculator}
-              className="text-gray-600 flex items-center hover:text-[#b82429] transition-colors duration-300 font-roboto"
+              className="text-gray-600 flex items-center hover:text-[#b82429] transition-colors duration-300 font-sans"
             >
               I have it figured out calculate my costs
               <span className="ml-2 text-[#b82429]">»»»</span>
@@ -115,7 +96,9 @@ export default function PurchaseOptions() {
               style={{ width: "240px", height: "70px" }}
             >
               <div className="relative h-full w-full flex items-center justify-center">
-                <div className="text-center font-bold text-2xl tracking-wide font-barlow text-black">{option.name}</div>
+                <div className="text-center font-bold text-2xl tracking-wide font-heading text-black">
+                  {option.name}
+                </div>
 
                 {/* Loading spinner - shows when selected */}
                 {selectedOption === option.id && isNavigating && (
@@ -142,7 +125,7 @@ export default function PurchaseOptions() {
         <div className="mb-8">
           <button
             onClick={handleBack}
-            className="flex items-center text-gray-700 hover:text-[#b82429] transition-colors"
+            className="flex items-center text-gray-700 hover:text-[#b82429] transition-colors font-sans"
           >
             <ArrowLeft size={20} className="mr-1" />
             <span className="font-medium">Back</span>
