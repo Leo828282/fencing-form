@@ -60,6 +60,12 @@ export default function AdjustmentsPageAlt() {
   const handleNext = () => {
     setIsNavigating(true)
 
+    // Ensure valid values before saving
+    const validMeters =
+      metersRequired === "" || isNaN(metersRequired) ? 1 : Math.min(800, Math.max(1, Number(metersRequired)))
+    const validDuration =
+      hireDuration === "" || isNaN(hireDuration) ? 1 : Math.min(getMaxDuration(), Math.max(1, Number(hireDuration)))
+
     // Save adjustments to localStorage
     const savedConfig = localStorage.getItem("fencingCalculatorConfig") || "{}"
     const config = JSON.parse(savedConfig)
@@ -67,8 +73,8 @@ export default function AdjustmentsPageAlt() {
       "fencingCalculatorConfig",
       JSON.stringify({
         ...config,
-        metersRequired,
-        hireDuration,
+        metersRequired: validMeters,
+        hireDuration: validDuration,
         durationUnit,
       }),
     )
@@ -90,14 +96,68 @@ export default function AdjustmentsPageAlt() {
   }
 
   // Increment/decrement functions
-  const incrementMeters = () => setMetersRequired((prev) => Math.min(800, prev + 1))
-  const decrementMeters = () => setMetersRequired((prev) => Math.max(1, prev - 1))
-  const incrementDuration = () => setHireDuration((prev) => Math.min(104, prev + 1))
-  const decrementDuration = () => setHireDuration((prev) => Math.max(1, prev - 1))
+  const incrementMeters = () =>
+    setMetersRequired((prev) => {
+      const current = prev === "" || isNaN(prev) ? 0 : Number(prev)
+      return Math.min(800, current + 10)
+    })
+
+  const decrementMeters = () =>
+    setMetersRequired((prev) => {
+      const current = prev === "" || isNaN(prev) ? 0 : Number(prev)
+      return Math.max(1, current - 10)
+    })
+
+  const incrementDuration = () =>
+    setHireDuration((prev) => {
+      const current = prev === "" || isNaN(prev) ? 0 : Number(prev)
+      return Math.min(getMaxDuration(), current + 1)
+    })
+
+  const decrementDuration = () =>
+    setHireDuration((prev) => {
+      const current = prev === "" || isNaN(prev) ? 0 : Number(prev)
+      return Math.max(1, current - 1)
+    })
 
   // Calculate slider percentage for fill
-  const getMetersPercentage = () => (metersRequired / 100) * 100
-  const getDurationPercentage = () => (hireDuration / 100) * 100
+  const getMetersPercentage = () => {
+    const value = metersRequired === "" || isNaN(metersRequired) ? 1 : Number(metersRequired)
+    return (value / 800) * 100
+  }
+
+  const getDurationPercentage = () => {
+    const value = hireDuration === "" || isNaN(hireDuration) ? 1 : Number(hireDuration)
+    return (value / getMaxDuration()) * 100
+  }
+
+  // Helper functions for duration
+  const getMinimumDuration = (unit) => {
+    return 1
+  }
+
+  const getMaxDuration = () => {
+    if (durationUnit === "days") return 730
+    if (durationUnit === "weeks") return 104
+    return 24
+  }
+
+  // Handle meters input change
+  const handleMetersChange = (e) => {
+    const value = e.target.value
+    if (value === "" || (!isNaN(value) && Number(value) >= 1 && Number(value) <= 800)) {
+      setMetersRequired(value)
+    }
+  }
+
+  // Handle meters blur to ensure valid value
+  const handleMetersBlur = () => {
+    if (metersRequired === "" || isNaN(metersRequired)) {
+      setMetersRequired(1)
+    } else {
+      setMetersRequired(Math.min(800, Math.max(1, Number(metersRequired))))
+    }
+  }
 
   return (
     <div
@@ -139,7 +199,8 @@ export default function AdjustmentsPageAlt() {
                   min="1"
                   max="800"
                   value={metersRequired}
-                  onChange={(e) => setMetersRequired(Math.max(1, Math.min(800, Number(e.target.value) || 1)))}
+                  onChange={handleMetersChange}
+                  onBlur={handleMetersBlur}
                   className="w-16 text-center border border-gray-300 py-1 px-2"
                 />
                 <div className="flex flex-col ml-1">
@@ -166,8 +227,8 @@ export default function AdjustmentsPageAlt() {
               <input
                 type="range"
                 min="1"
-                max="100"
-                value={metersRequired}
+                max="800"
+                value={metersRequired || 1}
                 onChange={(e) => setMetersRequired(Number(e.target.value))}
                 className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
               />
@@ -175,6 +236,11 @@ export default function AdjustmentsPageAlt() {
                 className="absolute top-0 w-5 h-5 bg-[#b82429] rounded-full -mt-1.5 transform -translate-x-1/2"
                 style={{ left: `${getMetersPercentage()}%` }}
               ></div>
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>1m</span>
+              <span>400m</span>
+              <span>800m</span>
             </div>
           </div>
 

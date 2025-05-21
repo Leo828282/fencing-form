@@ -83,7 +83,7 @@ export default function AdjustmentsSelection() {
     if (metersSliderRef.current && metersSliderFillRef.current) {
       const min = 1
       const max = 800
-      const val = metersRequired
+      const val = metersRequired || min
       const percentage = ((val - min) / (max - min)) * 100
 
       // Get the slider's width
@@ -100,7 +100,7 @@ export default function AdjustmentsSelection() {
     if (durationSliderRef.current && durationSliderFillRef.current && durationUnit) {
       const min = getMinimumDuration(durationUnit)
       const max = getMaxDuration(durationUnit)
-      const val = hireDuration
+      const val = hireDuration || min
       const percentage = ((val - min) / (max - min)) * 100
 
       // Get the slider's width
@@ -114,8 +114,54 @@ export default function AdjustmentsSelection() {
     }
   }
 
+  // Handle meters input change
+  const handleMetersChange = (e) => {
+    const value = e.target.value === "" ? "" : Number(e.target.value)
+    if (value === "" || (value >= 1 && value <= 800)) {
+      setMetersRequired(value)
+    }
+  }
+
+  // Handle meters blur to ensure valid value
+  const handleMetersBlur = () => {
+    if (metersRequired === "" || isNaN(metersRequired)) {
+      setMetersRequired(1)
+    } else {
+      setMetersRequired(Math.min(800, Math.max(1, Number(metersRequired))))
+    }
+  }
+
+  // Handle duration input change
+  const handleDurationChange = (e) => {
+    const value = e.target.value === "" ? "" : Number(e.target.value)
+    const min = getMinimumDuration(durationUnit)
+    const max = getMaxDuration(durationUnit)
+    if (value === "" || (value >= min && value <= max)) {
+      setHireDuration(value)
+    }
+  }
+
+  // Handle duration blur to ensure valid value
+  const handleDurationBlur = () => {
+    if (hireDuration === "" || isNaN(hireDuration)) {
+      setHireDuration(getMinimumDuration(durationUnit))
+    } else {
+      const min = getMinimumDuration(durationUnit)
+      const max = getMaxDuration(durationUnit)
+      setHireDuration(Math.min(max, Math.max(min, Number(hireDuration))))
+    }
+  }
+
   // Handle continue to calculator
   const handleContinue = () => {
+    // Ensure valid values before saving
+    const validMeters =
+      metersRequired === "" || isNaN(metersRequired) ? 1 : Math.min(800, Math.max(1, Number(metersRequired)))
+    const validDuration =
+      hireDuration === "" || isNaN(hireDuration)
+        ? getMinimumDuration(durationUnit)
+        : Math.min(getMaxDuration(durationUnit), Math.max(getMinimumDuration(durationUnit), Number(hireDuration)))
+
     // Save selections to localStorage
     const savedConfig = localStorage.getItem("fencingCalculatorConfig") || "{}"
     const config = JSON.parse(savedConfig)
@@ -123,8 +169,8 @@ export default function AdjustmentsSelection() {
       "fencingCalculatorConfig",
       JSON.stringify({
         ...config,
-        metersRequired,
-        hireDuration,
+        metersRequired: validMeters,
+        hireDuration: validDuration,
         durationUnit,
       }),
     )
@@ -169,12 +215,8 @@ export default function AdjustmentsSelection() {
                 min={1}
                 max={800}
                 value={metersRequired}
-                onChange={(e) => {
-                  const value = Number.parseInt(e.target.value)
-                  if (!isNaN(value)) {
-                    setMetersRequired(Math.min(800, Math.max(1, value)))
-                  }
-                }}
+                onChange={handleMetersChange}
+                onBlur={handleMetersBlur}
                 className="w-full border border-gray-300 rounded-md h-12 px-3 mb-2"
               />
               <div className="slider-container">
@@ -184,7 +226,7 @@ export default function AdjustmentsSelection() {
                   type="range"
                   min={1}
                   max={800}
-                  value={metersRequired}
+                  value={metersRequired || 1}
                   onChange={(e) => {
                     const value = Number.parseInt(e.target.value)
                     setMetersRequired(value)
@@ -231,14 +273,8 @@ export default function AdjustmentsSelection() {
                   min={getMinimumDuration(durationUnit)}
                   max={getMaxDuration(durationUnit)}
                   value={hireDuration}
-                  onChange={(e) => {
-                    const value = Number.parseInt(e.target.value)
-                    if (!isNaN(value)) {
-                      setHireDuration(
-                        Math.min(getMaxDuration(durationUnit), Math.max(getMinimumDuration(durationUnit), value)),
-                      )
-                    }
-                  }}
+                  onChange={handleDurationChange}
+                  onBlur={handleDurationBlur}
                   className="w-full border border-gray-300 rounded-md h-12 px-3 mb-2"
                 />
                 <div className="slider-container">
@@ -248,7 +284,7 @@ export default function AdjustmentsSelection() {
                     type="range"
                     min={getMinimumDuration(durationUnit)}
                     max={getMaxDuration(durationUnit)}
-                    value={hireDuration}
+                    value={hireDuration || getMinimumDuration(durationUnit)}
                     onChange={(e) => {
                       const value = Number.parseInt(e.target.value)
                       setHireDuration(value)
@@ -265,7 +301,7 @@ export default function AdjustmentsSelection() {
                     {Math.floor(getMaxDuration(durationUnit) / 2)} {durationUnit}
                   </span>
                   <span>
-                    {getMaxDuration(durationUnit)} {durationUnit}
+                    {durationUnit === "days" ? "730 days" : durationUnit === "weeks" ? "104 weeks" : "24 months"}
                   </span>
                 </div>
               </div>

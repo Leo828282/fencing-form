@@ -82,11 +82,49 @@ export default function AdjustmentsPage() {
   }
 
   // Calculate slider percentage for fill
-  const getMetersPercentage = () => (metersRequired / 100) * 100
+  const getMetersPercentage = () => (metersRequired / 800) * 100
   const getDurationPercentage = () => {
     const min = getMinimumDuration(durationUnit)
     const max = getMaxDuration(durationUnit)
     return ((hireDuration - min) / (max - min)) * 100
+  }
+
+  // Handle meters input change
+  const handleMetersChange = (e) => {
+    const value = e.target.value === "" ? "" : Number(e.target.value)
+    if (value === "" || (value >= 1 && value <= 800)) {
+      setMetersRequired(value === "" ? "" : Number(value))
+    }
+  }
+
+  // Handle meters blur to ensure valid value
+  const handleMetersBlur = () => {
+    if (metersRequired === "" || isNaN(metersRequired)) {
+      setMetersRequired(1)
+    } else {
+      setMetersRequired(Math.min(800, Math.max(1, Number(metersRequired))))
+    }
+  }
+
+  // Handle duration input change
+  const handleDurationChange = (e) => {
+    const value = e.target.value === "" ? "" : Number(e.target.value)
+    const min = getMinimumDuration(durationUnit)
+    const max = getMaxDuration(durationUnit)
+    if (value === "" || (value >= min && value <= max)) {
+      setHireDuration(value === "" ? "" : Number(value))
+    }
+  }
+
+  // Handle duration blur to ensure valid value
+  const handleDurationBlur = () => {
+    if (hireDuration === "" || isNaN(hireDuration)) {
+      setHireDuration(getMinimumDuration(durationUnit))
+    } else {
+      const min = getMinimumDuration(durationUnit)
+      const max = getMaxDuration(durationUnit)
+      setHireDuration(Math.min(max, Math.max(min, Number(hireDuration))))
+    }
   }
 
   return (
@@ -108,7 +146,15 @@ export default function AdjustmentsPage() {
           <div className="mb-8">
             <div className="font-bold mb-2 font-heading">Meters of Fencing Required</div>
             <div className="bg-gray-100 p-4 rounded mb-3">
-              <div className="text-lg font-sans">{metersRequired}</div>
+              <input
+                type="number"
+                min="1"
+                max="800"
+                value={metersRequired}
+                onChange={handleMetersChange}
+                onBlur={handleMetersBlur}
+                className="text-lg font-sans w-full bg-transparent border-none focus:outline-none"
+              />
             </div>
             <div className="relative h-2 bg-gray-300 rounded-full">
               <div
@@ -122,11 +168,16 @@ export default function AdjustmentsPage() {
               <input
                 type="range"
                 min="1"
-                max="100"
-                value={metersRequired}
+                max="800"
+                value={metersRequired || 1}
                 onChange={(e) => setMetersRequired(Number(e.target.value))}
                 className="absolute top-0 left-0 w-full h-8 opacity-0 cursor-pointer z-10 -mt-3"
               />
+            </div>
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>1m</span>
+              <span>400m</span>
+              <span>800m</span>
             </div>
           </div>
 
@@ -149,7 +200,15 @@ export default function AdjustmentsPage() {
                 </div>
               </div>
               <div className="bg-gray-100 p-4 rounded mb-3">
-                <div className="text-lg font-sans">{hireDuration}</div>
+                <input
+                  type="number"
+                  min={getMinimumDuration(durationUnit)}
+                  max={getMaxDuration(durationUnit)}
+                  value={hireDuration}
+                  onChange={handleDurationChange}
+                  onBlur={handleDurationBlur}
+                  className="text-lg font-sans w-full bg-transparent border-none focus:outline-none"
+                />
               </div>
               <div className="relative h-2 bg-gray-300 rounded-full">
                 <div
@@ -164,10 +223,21 @@ export default function AdjustmentsPage() {
                   type="range"
                   min={getMinimumDuration(durationUnit)}
                   max={getMaxDuration(durationUnit)}
-                  value={hireDuration}
+                  value={hireDuration || getMinimumDuration(durationUnit)}
                   onChange={(e) => setHireDuration(Number(e.target.value))}
                   className="absolute top-0 left-0 w-full h-8 opacity-0 cursor-pointer z-10 -mt-3"
                 />
+              </div>
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>
+                  {getMinimumDuration(durationUnit)} {durationUnit}
+                </span>
+                <span>
+                  {Math.floor(getMaxDuration(durationUnit) / 2)} {durationUnit}
+                </span>
+                <span>
+                  {durationUnit === "days" ? "730 days" : durationUnit === "weeks" ? "104 weeks" : "24 months"}
+                </span>
               </div>
             </div>
           )}

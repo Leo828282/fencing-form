@@ -53,27 +53,7 @@ export default function BookACallPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {/* Call Option */}
-            <div className="bg-white rounded-lg border p-12 shadow-md text-center">
-              <div className="text-[#b82429] mb-8 flex justify-center">
-                <Phone size={80} />
-              </div>
-
-              <h3 className="font-bold text-3xl mb-4 text-gray-800 font-heading">Call Us</h3>
-              <p className="text-2xl text-gray-700 font-sans">{phoneNumber}</p>
-            </div>
-
-            {/* Email Option */}
-            <div className="bg-white rounded-lg border p-12 shadow-md text-center">
-              <div className="text-[#b82429] mb-8 flex justify-center">
-                <Mail size={80} />
-              </div>
-
-              <h3 className="font-bold text-3xl mb-4 text-gray-800 font-heading">Email Us</h3>
-              <p className="text-2xl text-gray-700 font-sans">{emailAddress}</p>
-            </div>
-
-            {/* Book a Call Option */}
+            {/* Book a Call Option - Now first */}
             <div className="bg-white rounded-lg border p-12 shadow-md text-center">
               <div className="text-[#b82429] mb-8 flex justify-center">
                 <Calendar size={80} />
@@ -86,6 +66,26 @@ export default function BookACallPage() {
               >
                 Schedule online →
               </p>
+            </div>
+
+            {/* Call Option - Now second */}
+            <div className="bg-white rounded-lg border p-12 shadow-md text-center">
+              <div className="text-[#b82429] mb-8 flex justify-center">
+                <Phone size={80} />
+              </div>
+
+              <h3 className="font-bold text-3xl mb-4 text-gray-800 font-heading">Call Us</h3>
+              <p className="text-2xl text-gray-700 font-sans">{phoneNumber}</p>
+            </div>
+
+            {/* Email Option - Stays third */}
+            <div className="bg-white rounded-lg border p-12 shadow-md text-center">
+              <div className="text-[#b82429] mb-8 flex justify-center">
+                <Mail size={80} />
+              </div>
+
+              <h3 className="font-bold text-3xl mb-4 text-gray-800 font-heading">Email Us</h3>
+              <p className="text-2xl text-gray-700 font-sans">{emailAddress}</p>
             </div>
           </div>
 

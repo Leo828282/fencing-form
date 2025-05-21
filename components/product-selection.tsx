@@ -111,19 +111,21 @@ export default function ProductSelection() {
             style={{ height: "400px" }}
           >
             <div className="relative h-full w-full">
-              {/* Image container */}
+              {/* Image container - now with overlay */}
               <div className="h-full w-full relative bg-white flex items-center justify-center">
                 <div className="h-[340px] w-full flex items-center justify-center">
+                  {/* Black overlay - covers the entire image area */}
+                  <div className="absolute inset-0 bg-black z-10" style={{ opacity: 0.043 }}></div>
                   <img
                     src={option.image || "/placeholder.svg"}
                     alt={option.name}
-                    className="object-contain max-h-full max-w-full p-4"
+                    className="object-contain max-h-full max-w-full p-4 relative z-0"
                   />
                 </div>
 
                 {/* Product name banner */}
                 <div
-                  className={`absolute bottom-0 left-0 right-0 bg-[#b82429] text-white py-4 text-center font-medium h-[60px] flex items-center justify-center transition-opacity duration-300 ${
+                  className={`absolute bottom-0 left-0 right-0 bg-[#b82429] text-white py-4 text-center font-medium h-[60px] flex items-center justify-center transition-opacity duration-300 z-20 ${
                     selectedFenceType === option.id || hoveredFenceType === option.id ? "opacity-0" : "opacity-100"
                   }`}
                 >

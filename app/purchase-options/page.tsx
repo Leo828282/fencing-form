@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { Loader, ArrowLeft } from "lucide-react"
+import PaginationDots from "@/components/shared/pagination-dots"
 
 // Purchase/Hire options
 const OPTIONS = [
@@ -65,10 +66,10 @@ export default function PurchaseOptions() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
-        {/* Header section - exactly matching the image */}
-        <div className="text-center mb-16 mt-16">
-          <h1 className="text-[48px] font-bold mb-4 font-heading text-[#222] leading-tight">Select an option!</h1>
+      <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12">
+        {/* Header section with improved spacing */}
+        <div className="text-center mb-16 mt-8">
+          <h1 className="text-[48px] font-bold mb-6 font-heading text-[#222] leading-tight">Select an option!</h1>
           <div className="flex items-center justify-center">
             <button
               onClick={handleSkipToCalculator}
@@ -80,8 +81,8 @@ export default function PurchaseOptions() {
           </div>
         </div>
 
-        {/* Options - exactly matching the image */}
-        <div className="flex justify-center gap-8 w-full max-w-2xl mx-auto mb-16">
+        {/* Options with improved spacing */}
+        <div className="flex justify-center gap-12 w-full max-w-2xl mx-auto mb-16">
           {OPTIONS.map((option) => (
             <motion.div
               key={option.id}
@@ -121,8 +122,8 @@ export default function PurchaseOptions() {
           ))}
         </div>
 
-        {/* Back button - exactly matching the image position */}
-        <div className="mb-8">
+        {/* Back button with improved spacing */}
+        <div className="mb-12">
           <button
             onClick={handleBack}
             className="flex items-center text-gray-700 hover:text-[#b82429] transition-colors font-sans"
@@ -132,11 +133,9 @@ export default function PurchaseOptions() {
           </button>
         </div>
 
-        {/* Pagination dots - exactly matching the image */}
-        <div className="flex justify-center space-x-2">
-          {[...Array(totalSteps)].map((_, i) => (
-            <div key={i} className={`w-3 h-3 rounded-full ${i + 1 === currentStep ? "bg-[#b82429]" : "bg-gray-300"}`} />
-          ))}
+        {/* Pagination dots with improved spacing */}
+        <div className="mb-8">
+          <PaginationDots currentStep={currentStep} totalSteps={totalSteps} />
         </div>
       </div>
     </div>

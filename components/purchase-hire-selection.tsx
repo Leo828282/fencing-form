@@ -74,14 +74,14 @@ export default function PurchaseHireSelection() {
 
   return (
     <div className={`min-h-screen flex flex-col ${lato.className}`} style={{ backgroundColor: "#F1EFEA" }}>
-      <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 md:p-16">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-8"
+          className="text-center mb-16"
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">Would you like to purchase or hire?</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-6">Would you like to purchase or hire?</h1>
           <p className="text-gray-600 flex items-center justify-center">
             I have it figured out calculate my costs
             <motion.span
@@ -96,7 +96,7 @@ export default function PurchaseHireSelection() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-4xl w-full">
           {OPTIONS.map((option) => (
             <motion.div
               key={option.id}
@@ -146,7 +146,7 @@ export default function PurchaseHireSelection() {
         </div>
 
         {/* Pagination dots */}
-        <div className="flex justify-center mt-8 space-x-2">
+        <div className="flex justify-center mt-16 space-x-2">
           {[...Array(totalSteps)].map((_, i) => (
             <div key={i} className={`w-3 h-3 rounded-full ${i + 1 === currentStep ? "bg-[#b82429]" : "bg-gray-300"}`} />
           ))}

@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea"
 import {
   Grid,
   Footprints,
-  LinkIcon,
   CornerRightDown,
   DollarSign,
   Truck,
@@ -20,6 +19,8 @@ import {
   MapPin,
   FileText,
   AlertCircle,
+  LinkIcon,
+  LayoutGrid,
 } from "lucide-react"
 import Link from "next/link"
 
@@ -55,7 +56,7 @@ export default function QuoteRequestPage() {
   })
   const [dataLoaded, setDataLoaded] = useState(false)
   const [dataError, setDataError] = useState(false)
-  const [termsAccepted, setTermsAccepted] = useState(false)
+  // Removed termsAccepted state
 
   // All the existing useEffect hooks and functions...
   // Load quote details from URL params - only run once
@@ -172,10 +173,10 @@ export default function QuoteRequestPage() {
       !formData.address ||
       !formData.city ||
       !formData.state ||
-      !formData.zip ||
-      !termsAccepted
+      !formData.zip
+      // Removed termsAccepted check
     ) {
-      alert("Please fill in all required fields and accept the terms and conditions.")
+      alert("Please fill in all required fields.")
       return false
     }
 
@@ -283,7 +284,7 @@ export default function QuoteRequestPage() {
   const getItemIcon = (itemName, category) => {
     switch (category) {
       case "panels":
-        return <Grid size={16} className="mr-2 text-[#b82429]" />
+        return <LayoutGrid size={16} className="mr-2 text-[#b82429]" strokeWidth={1.25} />
       case "feet":
         return <Footprints size={16} className="mr-2 text-[#b82429]" />
       case "connectors":
@@ -299,11 +300,11 @@ export default function QuoteRequestPage() {
       case "discount":
         return <Info size={16} className="mr-2 text-[#b82429]" />
       case "insurance":
-        return <Shield size={16} className="mr-2 text-[#b82429] fill-[#f8d7d9]" />
+        return <Shield size={16} className="mr-2 text-[#b82429]" />
       default:
         // Fallback based on item name for backward compatibility
         if (itemName?.includes("Panel") || itemName?.includes("Builders")) {
-          return <Grid size={16} className="mr-2 text-[#b82429]" />
+          return <LayoutGrid size={16} className="mr-2 text-[#b82429]" strokeWidth={1.25} />
         } else if (itemName?.includes("Feet") || itemName?.includes("feet")) {
           return <Footprints size={16} className="mr-2 text-[#b82429]" />
         } else if (itemName?.includes("Stay") || itemName?.includes("Brace")) {
@@ -323,7 +324,7 @@ export default function QuoteRequestPage() {
   if (!dataLoaded && !dataError) {
     return (
       <div className="w-full min-h-screen font-sans" style={{ backgroundColor: "white" }}>
-        <div className="container mx-auto p-6 py-12">
+        <div className="container mx-auto p-6 py-12 scale-90 origin-top">
           <h1 className="font-heading text-4xl font-semibold text-center mb-4">Request a Quote</h1>
           <div className="text-center mb-8">
             <Link href="/calculator" className="text-[#b82429]">
@@ -346,7 +347,7 @@ export default function QuoteRequestPage() {
   if (dataError) {
     return (
       <div className="w-full min-h-screen font-sans" style={{ backgroundColor: "white" }}>
-        <div className="container mx-auto p-6 py-12">
+        <div className="container mx-auto p-6 py-12 scale-90 origin-top">
           <h1 className="font-heading text-4xl font-semibold text-center mb-4">Request a Quote</h1>
           <div className="text-center mb-8">
             <Link href="/calculator" className="text-[#b82429]">
@@ -377,7 +378,7 @@ export default function QuoteRequestPage() {
   return (
     <div className="w-full min-h-screen font-sans" style={{ backgroundColor: "white" }}>
       {showSuccess ? (
-        <div className="container mx-auto p-6 py-12">
+        <div className="container mx-auto p-6 py-12 scale-90 origin-top">
           <h1 className="font-heading text-4xl font-semibold text-center mb-4">Quote Submitted</h1>
 
           <div className="bg-white p-8 md:p-12 rounded-lg shadow-sm max-w-3xl mx-auto">
@@ -458,7 +459,7 @@ export default function QuoteRequestPage() {
           </div>
         </div>
       ) : (
-        <div className="container mx-auto p-6 py-12">
+        <div className="container mx-auto p-6 py-12 scale-90 origin-top">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             {/* Left Column - Quote Summary */}
             <div>
@@ -558,8 +559,8 @@ export default function QuoteRequestPage() {
               <form id="quote-form" onSubmit={handleSubmit} className="space-y-6">
                 {/* Personal Information */}
                 <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h2 className="font-heading text-xl font-semibold mb-4 text-gray-900 flex items-center">
-                    <User size={20} className="mr-2 text-[#b82429]" />
+                  <h2 className="font-heading text-xl font-semibold mb-4 bg-[#b82429] text-white p-3 rounded-md flex items-center">
+                    <User size={20} className="mr-2 text-white" />
                     Personal Information
                   </h2>
 
@@ -574,7 +575,7 @@ export default function QuoteRequestPage() {
                         name="firstName"
                         value={formData.firstName}
                         onChange={handleInputChange}
-                        className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -587,7 +588,7 @@ export default function QuoteRequestPage() {
                         name="lastName"
                         value={formData.lastName}
                         onChange={handleInputChange}
-                        className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -603,7 +604,7 @@ export default function QuoteRequestPage() {
                         name="email"
                         value={formData.email}
                         onChange={handleInputChange}
-                        className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -616,7 +617,7 @@ export default function QuoteRequestPage() {
                         name="phone"
                         value={formData.phone}
                         onChange={handleInputChange}
-                        className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -628,15 +629,15 @@ export default function QuoteRequestPage() {
                       name="company"
                       value={formData.company}
                       onChange={handleInputChange}
-                      className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                      className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
                     />
                   </div>
                 </div>
 
                 {/* Address Information */}
                 <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h2 className="font-heading text-xl font-semibold mb-4 text-gray-900 flex items-center">
-                    <MapPin size={20} className="mr-2 text-[#b82429]" />
+                  <h2 className="font-heading text-xl font-semibold mb-4 bg-[#b82429] text-white p-3 rounded-md flex items-center">
+                    <MapPin size={20} className="mr-2 text-white" />
                     Address Information
                   </h2>
 
@@ -650,7 +651,7 @@ export default function QuoteRequestPage() {
                       name="address"
                       value={formData.address}
                       onChange={handleInputChange}
-                      className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                      className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
                       placeholder="Street address"
                     />
                   </div>
@@ -666,7 +667,7 @@ export default function QuoteRequestPage() {
                         name="city"
                         value={formData.city}
                         onChange={handleInputChange}
-                        className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -679,7 +680,7 @@ export default function QuoteRequestPage() {
                         name="state"
                         value={formData.state}
                         onChange={handleInputChange}
-                        className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -692,7 +693,7 @@ export default function QuoteRequestPage() {
                         name="zip"
                         value={formData.zip}
                         onChange={handleInputChange}
-                        className="border border-gray-200 rounded-md h-10 w-full bg-white"
+                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -700,8 +701,8 @@ export default function QuoteRequestPage() {
 
                 {/* Additional Information */}
                 <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h2 className="font-heading text-xl font-semibold mb-4 text-gray-900 flex items-center">
-                    <FileText size={20} className="mr-2 text-[#b82429]" />
+                  <h2 className="font-heading text-xl font-semibold mb-4 bg-[#b82429] text-white p-3 rounded-md flex items-center">
+                    <FileText size={20} className="mr-2 text-white" />
                     Additional Information
                   </h2>
 
@@ -714,29 +715,12 @@ export default function QuoteRequestPage() {
                       value={formData.message}
                       onChange={handleInputChange}
                       rows={3}
-                      className="border border-gray-200 rounded-md w-full text-sm bg-white"
+                      className="border-2 border-gray-300 rounded-md w-full text-sm bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
                       placeholder="Please provide any additional information that might help us with your quote..."
                     />
                   </div>
 
-                  <div className="flex items-start">
-                    <div className="flex items-center h-5">
-                      <input
-                        id="terms"
-                        type="checkbox"
-                        checked={termsAccepted}
-                        onChange={() => setTermsAccepted(!termsAccepted)}
-                        required
-                        className="w-4 h-4 border border-[#b82429] rounded bg-red-50 focus:ring-3 focus:ring-red-300 accent-[#b82429]"
-                      />
-                    </div>
-                    <label htmlFor="terms" className="ml-2 text-xs font-medium text-gray-600">
-                      I agree to the{" "}
-                      <a href="#" className="text-[#b82429] hover:underline">
-                        terms and conditions
-                      </a>
-                    </label>
-                  </div>
+                  {/* Removed terms and conditions checkbox */}
                 </div>
               </form>
             </div>

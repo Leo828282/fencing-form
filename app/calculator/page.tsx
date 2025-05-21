@@ -27,9 +27,9 @@ export default function CalculatorPage() {
 
   return (
     <div className={`min-h-screen flex flex-col ${lato.className}`} style={{ backgroundColor: "white" }}>
-      <div className="flex-1 flex flex-col items-center p-4 md:p-8">
-        {/* Main content */}
-        <div className="w-full max-w-7xl">
+      <div className="flex-1 flex flex-col items-center p-4 md:p-6">
+        {/* Main content - scaled down by 10% */}
+        <div className="w-full max-w-[90%] mx-auto scale-90 origin-top">
           <FencingCalculator
             onUpdate={(data) => {
               try {

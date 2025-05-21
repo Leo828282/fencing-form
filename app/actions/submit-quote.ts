@@ -1,17 +1,18 @@
+import { formSchema } from "../schemas/formSchema" // Import formSchema
+
 export async function submitQuoteToCDV(formData: FormData) {
   try {
     // Validate the form data
     const validatedData = formSchema.parse(formData)
 
-    // Check if we have the API key and location ID
-    if (!CDV_API_KEY) {
-      console.error("CDV_API_KEY is not defined")
-      return { success: false, error: "API key is not configured" }
-    }
+    // Check if we have the webhook URL
+    const WEBHOOK_URL =
+      process.env.CDV_WEBHOOK_URL ||
+      "https://services.leadconnectorhq.com/hooks/K6IXtrByTpRfuWTrjizN/webhook-trigger/4ce7fd0e-c2e5-4ef1-8b11-ee0dc547d1df"
 
-    if (!CDV_LOCATION_ID) {
-      console.error("CDV_LOCATION_ID is not defined")
-      return { success: false, error: "Location ID is not configured" }
+    if (!WEBHOOK_URL) {
+      console.error("CDV_WEBHOOK_URL is not defined")
+      return { success: false, error: "Webhook URL is not configured" }
     }
 
     // Calculate panel-related values
@@ -80,61 +81,70 @@ ${validatedData.quoteDetails.items
           ? "Hook Stay"
           : ""
 
-    // Prepare the data for CDV API
-    const contactData = {
-      locationId: CDV_LOCATION_ID,
-      contactData: {
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
-        email: validatedData.email,
-        phone: validatedData.phone,
-        companyName: validatedData.businessName || "",
-        address1: validatedData.address,
-        state: validatedData.state,
-        postalCode: validatedData.postalCode,
-        source: "Fencing Calculator",
-        tags: ["Fencing Quote"],
-        customField: {
-          quote_type: validatedData.quoteDetails.selectedOption,
-          fence_panel_type: panelTypeName,
-          crowd_control_barriers: feetOptionName,
-          fencing_meters_required: validatedData.quoteDetails.metersRequired.toString(),
-          number_of_panels: numPanels.toString(),
-          number_of_feet: numFeet.toString(),
-          number_of_clamps: numClamps.toString(),
-          number_of_braces: numBraces.toString(),
-          hire_duration: validatedData.quoteDetails.hireDuration?.toString() || "",
-          duration_unit: validatedData.quoteDetails.durationUnit || "",
-          total_price: validatedData.quoteDetails.totalPrice.toString(),
-          notesspecial_requirements: notes,
-        },
-      },
+    // Prepare the data for webhook
+    const webhookData = {
+      // Contact information
+      firstName: validatedData.firstName,
+      lastName: validatedData.lastName,
+      email: validatedData.email,
+      phone: validatedData.phone,
+      companyName: validatedData.businessName || "",
+      address1: validatedData.address,
+      state: validatedData.state,
+      postalCode: validatedData.postalCode,
+      source: "Fencing Calculator",
+
+      // Quote details
+      quote_type: validatedData.quoteDetails.selectedOption,
+      fence_panel_type: panelTypeName,
+      feet_option: feetOptionName,
+      fencing_meters_required: validatedData.quoteDetails.metersRequired.toString(),
+      number_of_panels: numPanels.toString(),
+      number_of_feet: numFeet.toString(),
+      number_of_clamps: numClamps.toString(),
+      number_of_braces: numBraces.toString(),
+      hire_duration: validatedData.quoteDetails.hireDuration?.toString() || "",
+      duration_unit: validatedData.quoteDetails.durationUnit || "",
+      total_price: validatedData.quoteDetails.totalPrice.toString(),
+      notes: notes,
+
+      // Tags - ensure they're in the format expected by the webhook
+      tags: [
+        "Fencing Quote",
+        `${validatedData.quoteDetails.selectedOption.charAt(0).toUpperCase() + validatedData.quoteDetails.selectedOption.slice(1)} Quote`,
+      ],
+
+      // Site location details if available
+      site_location_address: validatedData.address,
+
+      // Additional fields that might be useful
+      city: validatedData.city || "",
     }
 
-    console.log("Submitting to CDV with API key:", CDV_API_KEY.substring(0, 5) + "...")
+    console.log("Submitting to webhook:", WEBHOOK_URL.substring(0, 30) + "...")
 
-    // Make the API request to CDV
-    const response = await fetch("https://rest.gohighlevel.com/v1/contacts/", {
+    // Make the API request to the webhook
+    const response = await fetch(WEBHOOK_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${CDV_API_KEY}`,
       },
-      body: JSON.stringify(contactData),
+      body: JSON.stringify(webhookData),
     })
 
     const responseText = await response.text()
-    console.log("CDV API Response:", response.status, responseText)
+    console.log("Webhook Response:", response.status, responseText)
 
     let responseData
     try {
       responseData = JSON.parse(responseText)
     } catch (e) {
-      responseData = { error: "Invalid JSON response" }
+      // If the response is not JSON, create a simple object with the text
+      responseData = { message: responseText }
     }
 
     if (!response.ok) {
-      console.error("Error submitting to CDV:", responseData)
+      console.error("Error submitting to webhook:", responseData)
       return {
         success: false,
         error: `API Error (${response.status}): ${responseData.error || responseData.message || "Unknown error"}`,
