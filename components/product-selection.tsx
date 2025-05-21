@@ -1,9 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { Loader } from "lucide-react"
 import { Barlow, Roboto } from "next/font/google"
 import PageLayout from "./shared/page-layout"
 
@@ -56,27 +55,10 @@ const FENCE_OPTIONS = [
 
 export default function ProductSelection() {
   const router = useRouter()
-  const [selectedFenceType, setSelectedFenceType] = useState<string | null>(null)
   const [hoveredFenceType, setHoveredFenceType] = useState<string | null>(null)
-  const [isNavigating, setIsNavigating] = useState(false)
 
-  // Effect to handle navigation after selection is saved
-  useEffect(() => {
-    if (selectedFenceType && isNavigating) {
-      // Short delay to show the loading spinner before navigating
-      const timer = setTimeout(() => {
-        router.push("/accessories")
-      }, 800)
-
-      return () => clearTimeout(timer)
-    }
-  }, [selectedFenceType, isNavigating, router])
-
-  // Handle fence type selection - now with immediate navigation
+  // Handle fence type selection - navigate immediately
   const handleFenceTypeSelect = (fenceTypeId: string) => {
-    setSelectedFenceType(fenceTypeId)
-    setIsNavigating(true)
-
     // Save selection to localStorage
     const savedConfig = localStorage.getItem("fencingCalculatorConfig") || "{}"
     const config = JSON.parse(savedConfig)
@@ -87,6 +69,9 @@ export default function ProductSelection() {
         selectedFenceType: fenceTypeId,
       }),
     )
+
+    // Navigate immediately
+    router.push("/accessories")
   }
 
   // Handle direct navigation to calculator
@@ -103,7 +88,10 @@ export default function ProductSelection() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            whileHover={{ y: -5 }}
+            whileHover={{
+              y: -5,
+              boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+            }}
             className="relative cursor-pointer overflow-hidden shadow-md bg-white"
             onClick={() => handleFenceTypeSelect(option.id)}
             onMouseEnter={() => setHoveredFenceType(option.id)}
@@ -126,39 +114,20 @@ export default function ProductSelection() {
                 {/* Product name banner */}
                 <div
                   className={`absolute bottom-0 left-0 right-0 bg-[#b82429] text-white py-4 text-center font-medium h-[60px] flex items-center justify-center transition-opacity duration-300 z-20 ${
-                    selectedFenceType === option.id || hoveredFenceType === option.id ? "opacity-0" : "opacity-100"
+                    hoveredFenceType === option.id ? "opacity-0" : "opacity-100"
                   }`}
                 >
                   <div className={`px-2 ${option.textSize}`}>{option.shortName}</div>
                 </div>
 
-                {/* Hover overlay - shows when hovering but not selected */}
+                {/* Hover overlay - shows when hovering */}
                 <div
                   className={`absolute inset-0 bg-black/75 flex items-center justify-center transition-all duration-300 ease-in-out ${
-                    hoveredFenceType === option.id && selectedFenceType !== option.id
-                      ? "opacity-100"
-                      : "opacity-0 pointer-events-none"
+                    hoveredFenceType === option.id ? "opacity-100" : "opacity-0 pointer-events-none"
                   }`}
                 >
                   <div className="text-white font-bold text-2xl tracking-wide">SELECT OPTION</div>
                 </div>
-
-                {/* Loading spinner - shows when selected */}
-                {selectedFenceType === option.id && (
-                  <div className="absolute inset-0 bg-black/75 flex items-center justify-center transition-all duration-300 ease-in-out">
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: Number.POSITIVE_INFINITY,
-                        ease: "linear",
-                      }}
-                      className="text-white"
-                    >
-                      <Loader size={48} className="text-white" />
-                    </motion.div>
-                  </div>
-                )}
               </div>
             </div>
           </motion.div>

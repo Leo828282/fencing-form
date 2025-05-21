@@ -1,7 +1,7 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Calculator } from "lucide-react"
 import { useRouter } from "next/navigation"
 import PaginationDots from "./pagination-dots"
 
@@ -39,15 +39,16 @@ export default function PageLayout({
       <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
         {/* Header section - consistent across all pages */}
         <div className="text-center mb-16 mt-16">
-          <h1 className="text-[48px] font-bold mb-4 font-heading text-[#222] leading-tight">{title}</h1>
+          <h1 className="text-[48px] font-bold mb-6 font-heading text-[#222] leading-tight">{title}</h1>
           {skipToCalculator && (
             <div className="flex items-center justify-center">
               <button
                 onClick={handleSkipToCalculator}
-                className="text-gray-600 flex items-center hover:text-[#b82429] transition-colors duration-300 font-sans"
+                className="inline-flex items-center bg-[#b82429] text-white font-medium px-5 py-2.5 rounded-full shadow-sm hover:shadow-md transition-all duration-200 hover:bg-[#a52025]"
               >
-                I have it figured out calculate my costs
-                <span className="ml-2 text-[#b82429]">»»»</span>
+                <Calculator size={18} className="mr-2 text-white" />
+                <span>I have it figured out calculate my costs</span>
+                <span className="ml-1 font-bold">»»</span>
               </button>
             </div>
           )}

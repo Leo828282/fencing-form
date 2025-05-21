@@ -324,7 +324,7 @@ export default function QuoteRequestPage() {
   if (!dataLoaded && !dataError) {
     return (
       <div className="w-full min-h-screen font-sans" style={{ backgroundColor: "white" }}>
-        <div className="container mx-auto p-6 py-12 scale-90 origin-top">
+        <div className="container mx-auto p-6 py-12 scale-95 origin-top">
           <h1 className="font-heading text-4xl font-semibold text-center mb-4">Request a Quote</h1>
           <div className="text-center mb-8">
             <Link href="/calculator" className="text-[#b82429]">
@@ -347,7 +347,7 @@ export default function QuoteRequestPage() {
   if (dataError) {
     return (
       <div className="w-full min-h-screen font-sans" style={{ backgroundColor: "white" }}>
-        <div className="container mx-auto p-6 py-12 scale-90 origin-top">
+        <div className="container mx-auto p-6 py-12 scale-95 origin-top">
           <h1 className="font-heading text-4xl font-semibold text-center mb-4">Request a Quote</h1>
           <div className="text-center mb-8">
             <Link href="/calculator" className="text-[#b82429]">
@@ -378,7 +378,7 @@ export default function QuoteRequestPage() {
   return (
     <div className="w-full min-h-screen font-sans" style={{ backgroundColor: "white" }}>
       {showSuccess ? (
-        <div className="container mx-auto p-6 py-12 scale-90 origin-top">
+        <div className="container mx-auto p-6 py-12 scale-95 origin-top">
           <h1 className="font-heading text-4xl font-semibold text-center mb-4">Quote Submitted</h1>
 
           <div className="bg-white p-8 md:p-12 rounded-lg shadow-sm max-w-3xl mx-auto">
@@ -459,7 +459,7 @@ export default function QuoteRequestPage() {
           </div>
         </div>
       ) : (
-        <div className="container mx-auto p-6 py-12 scale-90 origin-top">
+        <div className="container mx-auto p-6 py-12 scale-95 origin-top">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             {/* Left Column - Quote Summary */}
             <div>

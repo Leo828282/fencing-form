@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { Loader, ChevronUp, ChevronDown, ArrowLeft } from "lucide-react"
+import { Loader, ChevronUp, ChevronDown, ArrowLeft, Calculator } from "lucide-react"
 import { Barlow, Roboto } from "next/font/google"
+import PaginationDots from "@/components/shared/pagination-dots"
 
 // Initialize the fonts
 const barlow = Barlow({
@@ -164,31 +165,25 @@ export default function AdjustmentsPageAlt() {
       className={`min-h-screen flex flex-col ${barlow.variable} ${roboto.variable}`}
       style={{ backgroundColor: "white" }}
     >
-      {/* Back button */}
-      <div className="absolute top-4 left-4 md:top-8 md:left-8">
-        <button onClick={handleBack} className="flex items-center text-gray-700 hover:text-[#b82429] transition-colors">
-          <ArrowLeft size={20} className="mr-1" />
-          <span className="font-medium">Back</span>
-        </button>
-      </div>
-
       <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
-        <div className="text-center mb-8">
-          <h1 className="text-[40px] md:text-[48px] font-bold mb-4 font-barlow text-[#222] leading-tight">
+        {/* Header section with standardized spacing */}
+        <div className="text-center mb-16 mt-16">
+          <h1 className="text-[48px] font-bold mb-6 font-heading text-[#222] leading-tight">
             Adjust for what you need!
           </h1>
           <div className="flex items-center justify-center">
             <button
               onClick={handleSkipToCalculator}
-              className="text-gray-600 flex items-center hover:text-[#b82429] transition-colors duration-300 font-roboto"
+              className="inline-flex items-center bg-[#b82429] text-white font-medium px-5 py-2.5 rounded-full shadow-sm hover:shadow-md transition-all duration-200 hover:bg-[#a52025]"
             >
-              I have it figured out calculate my costs
-              <span className="ml-2 text-[#b82429]">»</span>
+              <Calculator size={18} className="mr-2 text-white" />
+              <span>I have it figured out calculate my costs</span>
+              <span className="ml-1 font-bold">»»</span>
             </button>
           </div>
         </div>
 
-        <div className="max-w-xl w-full bg-white p-8 rounded-lg shadow-sm">
+        <div className="max-w-xl w-full bg-white p-8 rounded-lg shadow-sm mb-16">
           {/* Meters of Fencing Required */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-6">
@@ -245,7 +240,7 @@ export default function AdjustmentsPageAlt() {
           </div>
 
           {/* Next button */}
-          <div className="flex justify-center mt-8">
+          <div className="flex justify-center">
             <button
               onClick={handleNext}
               className="bg-[#b82429] text-white px-8 py-2 font-medium text-lg hover:bg-[#a01f24] transition-colors"
@@ -269,11 +264,20 @@ export default function AdjustmentsPageAlt() {
           </div>
         </div>
 
+        {/* Back button */}
+        <div className="mb-8">
+          <button
+            onClick={handleBack}
+            className="flex items-center text-gray-700 hover:text-[#b82429] transition-colors font-sans"
+          >
+            <ArrowLeft size={20} className="mr-1" />
+            <span className="font-medium">Back</span>
+          </button>
+        </div>
+
         {/* Pagination dots */}
-        <div className="flex justify-center mt-16 space-x-2">
-          {[...Array(totalSteps)].map((_, i) => (
-            <div key={i} className={`w-3 h-3 rounded-full ${i + 1 === currentStep ? "bg-[#b82429]" : "bg-gray-300"}`} />
-          ))}
+        <div className="mb-8">
+          <PaginationDots currentStep={currentStep} totalSteps={totalSteps} />
         </div>
       </div>
     </div>

@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
+import { ArrowLeft, Calculator } from "lucide-react"
+import PaginationDots from "@/components/shared/pagination-dots"
 
 // Duration unit options with minimum values
 const DURATION_UNITS = [
@@ -81,6 +82,11 @@ export default function AdjustmentsPage() {
     router.push("/calculator")
   }
 
+  // Handle back navigation
+  const handleBack = () => {
+    router.push("/purchase-options")
+  }
+
   // Calculate slider percentage for fill
   const getMetersPercentage = () => (metersRequired / 800) * 100
   const getDurationPercentage = () => {
@@ -130,18 +136,25 @@ export default function AdjustmentsPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
-        {/* Header section */}
-        <div className="text-center mb-8">
-          <h1 className="text-[48px] font-bold mb-2 font-heading text-black">Adjust for what you need!</h1>
-          <p className="text-gray-600 font-sans">
-            <button onClick={handleSkipToCalculator} className="text-gray-600 hover:text-[#b82429]">
-              I have it figured out calculate my costs ---&gt;
+        {/* Header section with standardized spacing */}
+        <div className="text-center mb-16 mt-16">
+          <h1 className="text-[48px] font-bold mb-6 font-heading text-[#222] leading-tight">
+            Adjust for what you need!
+          </h1>
+          <div className="flex items-center justify-center">
+            <button
+              onClick={handleSkipToCalculator}
+              className="inline-flex items-center bg-[#b82429] text-white font-medium px-5 py-2.5 rounded-full shadow-sm hover:shadow-md transition-all duration-200 hover:bg-[#a52025]"
+            >
+              <Calculator size={18} className="mr-2 text-white" />
+              <span>I have it figured out calculate my costs</span>
+              <span className="ml-1 font-bold">»»</span>
             </button>
-          </p>
+          </div>
         </div>
 
         {/* Main content area */}
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md mb-16">
           {/* Meters of Fencing Required */}
           <div className="mb-8">
             <div className="font-bold mb-2 font-heading">Meters of Fencing Required</div>
@@ -242,24 +255,8 @@ export default function AdjustmentsPage() {
             </div>
           )}
 
-          {/* Back button */}
-          <div className="flex justify-center mt-6 mb-6">
-            <Link href="/purchase-options" className="flex items-center text-gray-600 hover:text-[#b82429] font-sans">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Back
-            </Link>
-          </div>
-
           {/* Next button */}
-          <div className="flex justify-center mb-12">
+          <div className="flex justify-center">
             <button
               onClick={handleNext}
               className="bg-[#b82429] text-white px-6 py-2 font-medium hover:bg-[#a01f24] transition-colors font-sans"
@@ -269,16 +266,20 @@ export default function AdjustmentsPage() {
           </div>
         </div>
 
+        {/* Back button */}
+        <div className="mb-8">
+          <button
+            onClick={handleBack}
+            className="flex items-center text-gray-700 hover:text-[#b82429] transition-colors font-sans"
+          >
+            <ArrowLeft size={20} className="mr-1" />
+            <span className="font-medium">Back</span>
+          </button>
+        </div>
+
         {/* Pagination dots */}
-        <div className="flex justify-center space-x-2">
-          {[...Array(totalSteps)].map((_, i) => (
-            <div
-              key={i}
-              className={`w-3 h-3 rounded-full ${
-                i + 1 === currentStep ? "bg-[#b82429]" : i + 1 < currentStep ? "bg-[#e57373]" : "bg-gray-300"
-              }`}
-            />
-          ))}
+        <div className="mb-8">
+          <PaginationDots currentStep={currentStep} totalSteps={totalSteps} />
         </div>
       </div>
     </div>

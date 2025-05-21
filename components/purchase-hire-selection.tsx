@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { ChevronRight, ShoppingCart, Clock } from "lucide-react"
@@ -34,25 +34,12 @@ const OPTIONS = [
 
 export default function PurchaseHireSelection() {
   const router = useRouter()
-  const [selectedOption, setSelectedOption] = useState<string | null>(null)
+  const [hoveredOption, setHoveredOption] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState(3)
   const totalSteps = 4
 
-  // Load saved configuration
-  useEffect(() => {
-    const savedConfig = localStorage.getItem("fencingCalculatorConfig")
-    if (savedConfig) {
-      const config = JSON.parse(savedConfig)
-      if (config.selectedOption) {
-        setSelectedOption(config.selectedOption)
-      }
-    }
-  }, [])
-
-  // Handle option selection
+  // Handle option selection - navigate immediately
   const handleOptionSelect = (optionId: string) => {
-    setSelectedOption(optionId)
-
     // Save selection to localStorage
     const savedConfig = localStorage.getItem("fencingCalculatorConfig") || "{}"
     const config = JSON.parse(savedConfig)
@@ -63,13 +50,9 @@ export default function PurchaseHireSelection() {
         selectedOption: optionId,
       }),
     )
-  }
 
-  // Handle continue to next step
-  const handleContinue = () => {
-    if (selectedOption) {
-      router.push("/step4")
-    }
+    // Navigate immediately
+    router.push("/step4")
   }
 
   return (
@@ -103,9 +86,14 @@ export default function PurchaseHireSelection() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              whileHover={{ y: -5 }}
+              whileHover={{
+                y: -5,
+                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+              }}
               className="relative cursor-pointer rounded-lg overflow-hidden shadow-md bg-white"
               onClick={() => handleOptionSelect(option.id)}
+              onMouseEnter={() => setHoveredOption(option.id)}
+              onMouseLeave={() => setHoveredOption(null)}
               style={{ height: "320px" }}
             >
               <div className="relative h-full w-full">
@@ -116,26 +104,20 @@ export default function PurchaseHireSelection() {
                     <p className="text-gray-600">{option.description}</p>
                   </div>
 
-                  {/* Overlay when selected */}
-                  {selectedOption === option.id && (
-                    <div className="absolute inset-0 bg-gray-700/80 flex items-center justify-center">
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.3 }}
-                        className="text-white font-bold text-xl"
-                        onClick={handleContinue}
-                      >
-                        SELECT OPTION
-                      </motion.div>
-                    </div>
-                  )}
+                  {/* Hover overlay */}
+                  <div
+                    className={`absolute inset-0 bg-black/75 flex items-center justify-center transition-all duration-300 ease-in-out ${
+                      hoveredOption === option.id ? "opacity-100" : "opacity-0 pointer-events-none"
+                    }`}
+                  >
+                    <div className="text-white font-bold text-xl tracking-wide">SELECT OPTION</div>
+                  </div>
                 </div>
 
                 {/* Product name banner */}
                 <div
                   className={`absolute bottom-0 left-0 right-0 bg-[#b82429] text-white p-2 text-center text-sm font-medium transition-opacity duration-300 ${
-                    selectedOption === option.id ? "opacity-0" : "opacity-100"
+                    hoveredOption === option.id ? "opacity-0" : "opacity-100"
                   }`}
                 >
                   {option.name}

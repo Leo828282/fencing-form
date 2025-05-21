@@ -1,9 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { Loader } from "lucide-react"
 import PageLayout from "@/components/shared/page-layout"
 
 // Accessories options with their details
@@ -26,27 +25,10 @@ const ACCESSORIES_OPTIONS = [
 
 export default function AccessoriesSelection() {
   const router = useRouter()
-  const [selectedAccessory, setSelectedAccessory] = useState<string | null>(null)
   const [hoveredAccessory, setHoveredAccessory] = useState<string | null>(null)
-  const [isNavigating, setIsNavigating] = useState(false)
 
-  // Effect to handle navigation after selection is saved
-  useEffect(() => {
-    if (selectedAccessory && isNavigating) {
-      // Short delay to show the loading spinner before navigating
-      const timer = setTimeout(() => {
-        router.push("/purchase-options")
-      }, 800)
-
-      return () => clearTimeout(timer)
-    }
-  }, [selectedAccessory, isNavigating, router])
-
-  // Handle accessory selection - now with immediate navigation
+  // Handle accessory selection - navigate immediately
   const handleAccessorySelect = (accessoryId: string) => {
-    setSelectedAccessory(accessoryId)
-    setIsNavigating(true)
-
     // Save selection to localStorage
     const savedConfig = localStorage.getItem("fencingCalculatorConfig") || "{}"
     const config = JSON.parse(savedConfig)
@@ -57,6 +39,9 @@ export default function AccessoriesSelection() {
         selectedAccessory: accessoryId,
       }),
     )
+
+    // Navigate immediately
+    router.push("/purchase-options")
   }
 
   return (
@@ -68,7 +53,10 @@ export default function AccessoriesSelection() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            whileHover={{ y: -5 }}
+            whileHover={{
+              y: -5,
+              boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+            }}
             className="relative cursor-pointer overflow-hidden shadow-md bg-white"
             onClick={() => handleAccessorySelect(option.id)}
             onMouseEnter={() => setHoveredAccessory(option.id)}
@@ -91,7 +79,7 @@ export default function AccessoriesSelection() {
                 {/* Product name banner */}
                 <div
                   className={`absolute bottom-0 left-0 right-0 bg-[#b82429] text-white py-4 text-center font-medium h-[60px] flex items-center justify-center transition-opacity duration-300 z-20 ${
-                    selectedAccessory === option.id || hoveredAccessory === option.id ? "opacity-0" : "opacity-100"
+                    hoveredAccessory === option.id ? "opacity-0" : "opacity-100"
                   }`}
                 >
                   <div className={`px-2 ${option.textSize} font-sans`}>{option.shortName}</div>
@@ -100,30 +88,11 @@ export default function AccessoriesSelection() {
                 {/* Hover overlay */}
                 <div
                   className={`absolute inset-0 bg-black/75 flex items-center justify-center transition-all duration-300 ease-in-out ${
-                    hoveredAccessory === option.id && selectedAccessory !== option.id
-                      ? "opacity-100"
-                      : "opacity-0 pointer-events-none"
+                    hoveredAccessory === option.id ? "opacity-100" : "opacity-0 pointer-events-none"
                   }`}
                 >
                   <div className="text-white font-bold text-2xl tracking-wide font-heading">SELECT OPTION</div>
                 </div>
-
-                {/* Loading spinner */}
-                {selectedAccessory === option.id && (
-                  <div className="absolute inset-0 bg-black/75 flex items-center justify-center transition-all duration-300 ease-in-out">
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: Number.POSITIVE_INFINITY,
-                        ease: "linear",
-                      }}
-                      className="text-white"
-                    >
-                      <Loader size={48} className="text-white" />
-                    </motion.div>
-                  </div>
-                )}
               </div>
             </div>
           </motion.div>

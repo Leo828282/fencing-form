@@ -1,9 +1,9 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { Loader, ArrowLeft } from "lucide-react"
+import { ArrowLeft, Calculator } from "lucide-react"
 import PaginationDots from "@/components/shared/pagination-dots"
 
 // Purchase/Hire options
@@ -20,28 +20,12 @@ const OPTIONS = [
 
 export default function PurchaseOptions() {
   const router = useRouter()
-  const [selectedOption, setSelectedOption] = useState<string | null>(null)
-  const [isNavigating, setIsNavigating] = useState(false)
+  const [hoveredOption, setHoveredOption] = useState<string | null>(null)
   const currentStep = 3
   const totalSteps = 5
 
-  // Effect to handle navigation after selection is saved
-  useEffect(() => {
-    if (selectedOption && isNavigating) {
-      // Short delay to show the loading spinner before navigating
-      const timer = setTimeout(() => {
-        router.push("/adjustments")
-      }, 800)
-
-      return () => clearTimeout(timer)
-    }
-  }, [selectedOption, isNavigating, router])
-
-  // Handle option selection - now with immediate navigation
+  // Handle option selection - navigate immediately
   const handleOptionSelect = (optionId: string) => {
-    setSelectedOption(optionId)
-    setIsNavigating(true)
-
     // Save selection to localStorage
     const savedConfig = localStorage.getItem("fencingCalculatorConfig") || "{}"
     const config = JSON.parse(savedConfig)
@@ -52,6 +36,9 @@ export default function PurchaseOptions() {
         selectedOption: optionId,
       }),
     )
+
+    // Navigate immediately
+    router.push("/adjustments")
   }
 
   // Handle direct navigation to calculator
@@ -66,17 +53,18 @@ export default function PurchaseOptions() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12">
-        {/* Header section with improved spacing */}
-        <div className="text-center mb-16 mt-8">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8">
+        {/* Header section with standardized spacing */}
+        <div className="text-center mb-16 mt-16">
           <h1 className="text-[48px] font-bold mb-6 font-heading text-[#222] leading-tight">Select an option!</h1>
           <div className="flex items-center justify-center">
             <button
               onClick={handleSkipToCalculator}
-              className="text-gray-600 flex items-center hover:text-[#b82429] transition-colors duration-300 font-sans"
+              className="inline-flex items-center bg-[#b82429] text-white font-medium px-5 py-2.5 rounded-full shadow-sm hover:shadow-md transition-all duration-200 hover:bg-[#a52025]"
             >
-              I have it figured out calculate my costs
-              <span className="ml-2 text-[#b82429]">»»»</span>
+              <Calculator size={18} className="mr-2 text-white" />
+              <span>I have it figured out calculate my costs</span>
+              <span className="ml-1 font-bold">»»</span>
             </button>
           </div>
         </div>
@@ -89,41 +77,40 @@ export default function PurchaseOptions() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              whileHover={{ y: -5 }}
+              whileHover={{
+                y: -5,
+                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+              }}
               className={`relative cursor-pointer overflow-hidden shadow-md bg-white
                 ${option.id === "purchase" ? "border-2 border-[#b82429]" : "border border-gray-300"}
               `}
               onClick={() => handleOptionSelect(option.id)}
+              onMouseEnter={() => setHoveredOption(option.id)}
+              onMouseLeave={() => setHoveredOption(null)}
               style={{ width: "240px", height: "70px" }}
             >
               <div className="relative h-full w-full flex items-center justify-center">
-                <div className="text-center font-bold text-2xl tracking-wide font-heading text-black">
+                <div
+                  className={`text-center font-bold text-2xl tracking-wide font-heading text-black transition-opacity duration-300`}
+                >
                   {option.name}
                 </div>
 
-                {/* Loading spinner - shows when selected */}
-                {selectedOption === option.id && isNavigating && (
-                  <div className="absolute inset-0 bg-black/75 flex items-center justify-center transition-all duration-300 ease-in-out">
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 1.5,
-                        repeat: Number.POSITIVE_INFINITY,
-                        ease: "linear",
-                      }}
-                      className="text-white"
-                    >
-                      <Loader size={32} className="text-white" />
-                    </motion.div>
-                  </div>
-                )}
+                {/* Hover overlay - shows when hovering but not selected */}
+                <div
+                  className={`absolute inset-0 bg-black/75 flex items-center justify-center transition-all duration-300 ease-in-out ${
+                    hoveredOption === option.id ? "opacity-100" : "opacity-0 pointer-events-none"
+                  }`}
+                >
+                  <div className="text-white font-bold text-xl tracking-wide">SELECT OPTION</div>
+                </div>
               </div>
             </motion.div>
           ))}
         </div>
 
         {/* Back button with improved spacing */}
-        <div className="mb-12">
+        <div className="mb-8">
           <button
             onClick={handleBack}
             className="flex items-center text-gray-700 hover:text-[#b82429] transition-colors font-sans"

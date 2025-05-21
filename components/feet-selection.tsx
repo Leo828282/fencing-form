@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
@@ -33,25 +33,12 @@ const FEET_OPTIONS = [
 
 export default function FeetSelection() {
   const router = useRouter()
-  const [selectedFeet, setSelectedFeet] = useState<string | null>(null)
+  const [hoveredFeet, setHoveredFeet] = useState<string | null>(null)
   const [currentStep, setCurrentStep] = useState(2)
   const totalSteps = 4
 
-  // Load saved configuration
-  useEffect(() => {
-    const savedConfig = localStorage.getItem("fencingCalculatorConfig")
-    if (savedConfig) {
-      const config = JSON.parse(savedConfig)
-      if (config.selectedFeetOption) {
-        setSelectedFeet(config.selectedFeetOption)
-      }
-    }
-  }, [])
-
-  // Handle feet selection
+  // Handle feet selection - navigate immediately
   const handleFeetSelect = (feetId: string) => {
-    setSelectedFeet(feetId)
-
     // Save selection to localStorage
     const savedConfig = localStorage.getItem("fencingCalculatorConfig") || "{}"
     const config = JSON.parse(savedConfig)
@@ -62,13 +49,9 @@ export default function FeetSelection() {
         selectedFeetOption: feetId,
       }),
     )
-  }
 
-  // Handle continue to next step
-  const handleContinue = () => {
-    if (selectedFeet) {
-      router.push("/step3")
-    }
+    // Navigate immediately
+    router.push("/step3")
   }
 
   return (
@@ -102,9 +85,14 @@ export default function FeetSelection() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
-              whileHover={{ y: -5 }}
+              whileHover={{
+                y: -5,
+                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+              }}
               className="relative cursor-pointer rounded-lg overflow-hidden shadow-md bg-white"
               onClick={() => handleFeetSelect(option.id)}
+              onMouseEnter={() => setHoveredFeet(option.id)}
+              onMouseLeave={() => setHoveredFeet(null)}
               style={{ height: "320px" }}
             >
               <div className="relative h-full w-full">
@@ -117,26 +105,20 @@ export default function FeetSelection() {
                     className="object-contain"
                   />
 
-                  {/* Overlay when selected */}
-                  {selectedFeet === option.id && (
-                    <div className="absolute inset-0 bg-gray-700/80 flex items-center justify-center">
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.3 }}
-                        className="text-white font-bold text-xl"
-                        onClick={handleContinue}
-                      >
-                        SELECT OPTION
-                      </motion.div>
-                    </div>
-                  )}
+                  {/* Hover overlay */}
+                  <div
+                    className={`absolute inset-0 bg-black/75 flex items-center justify-center transition-all duration-300 ease-in-out ${
+                      hoveredFeet === option.id ? "opacity-100" : "opacity-0 pointer-events-none"
+                    }`}
+                  >
+                    <div className="text-white font-bold text-xl tracking-wide">SELECT OPTION</div>
+                  </div>
                 </div>
 
                 {/* Product name banner */}
                 <div
                   className={`absolute bottom-0 left-0 right-0 bg-[#b82429] text-white p-2 text-center text-sm font-medium transition-opacity duration-300 ${
-                    selectedFeet === option.id ? "opacity-0" : "opacity-100"
+                    hoveredFeet === option.id ? "opacity-0" : "opacity-100"
                   }`}
                 >
                   {option.shortName}
