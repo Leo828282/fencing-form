@@ -256,13 +256,13 @@ export default function QuoteRequestPage() {
   const getFenceTypeDisplayName = (fenceType) => {
     switch (fenceType) {
       case "builders":
-        return "Builder's Temporary Smart Duty Panels"
+        return "2.4m Builder's Temporary Smart Duty Panels (2.5mm Wire Mesh)"
       case "premium":
-        return "Premium Grade Heavy Duty Panels"
+        return "2.4m Premium Grade Heavy Duty Panels (4mm Wire Mesh)"
       case "pool":
-        return "Temporary Fence Pool Panels"
+        return "2.3m Temporary Fence Pool Panels"
       case "crowd":
-        return "Crowd Control Barriers"
+        return "2.2m Crowd Control Barriers"
       default:
         return "Fence Panels"
     }
@@ -324,7 +324,7 @@ export default function QuoteRequestPage() {
   if (!dataLoaded && !dataError) {
     return (
       <div className="w-full min-h-screen font-sans" style={{ backgroundColor: "white" }}>
-        <div className="container mx-auto p-6 py-12 scale-85 origin-top">
+        <div className="container mx-auto px-4 py-12 scale-80 origin-top">
           <h1 className="font-heading text-4xl font-semibold text-center mb-4">Request a Quote</h1>
           <div className="text-center mb-8">
             <Link href="/calculator" className="text-[#b82429]">
@@ -347,7 +347,7 @@ export default function QuoteRequestPage() {
   if (dataError) {
     return (
       <div className="w-full min-h-screen font-sans" style={{ backgroundColor: "white" }}>
-        <div className="container mx-auto p-6 py-12 scale-85 origin-top">
+        <div className="container mx-auto px-4 py-12 scale-80 origin-top">
           <h1 className="font-heading text-4xl font-semibold text-center mb-4">Request a Quote</h1>
           <div className="text-center mb-8">
             <Link href="/calculator" className="text-[#b82429]">
@@ -378,7 +378,7 @@ export default function QuoteRequestPage() {
   return (
     <div className="w-full min-h-screen font-sans" style={{ backgroundColor: "white" }}>
       {showSuccess ? (
-        <div className="container mx-auto p-6 py-12 scale-85 origin-top">
+        <div className="container mx-auto px-4 py-12 scale-80 origin-top">
           <h1 className="font-heading text-4xl font-semibold text-center mb-4">Quote Submitted</h1>
 
           <div className="bg-white p-8 md:p-12 rounded-lg shadow-sm max-w-3xl mx-auto">
@@ -459,14 +459,14 @@ export default function QuoteRequestPage() {
           </div>
         </div>
       ) : (
-        <div className="container mx-auto p-6 py-12 scale-85 origin-top">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+        <div className="container mx-auto px-4 py-12 scale-80 origin-top">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left Column - Quote Summary */}
             <div>
               <div className="bg-white rounded-lg shadow-sm overflow-hidden h-full">
                 {/* Header */}
-                <div className="border-b border-gray-200 p-6">
-                  <h2 className="font-heading text-xl font-semibold text-gray-900">Quote Summary</h2>
+                <div className="border-b border-gray-200 p-6 bg-[#b82429] text-white">
+                  <h2 className="font-heading text-xl font-semibold">Quote Summary</h2>
                 </div>
 
                 <div className="p-6">
@@ -727,7 +727,7 @@ export default function QuoteRequestPage() {
           </div>
 
           {/* Bottom Buttons - Outside the grid to span full width */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 w-full">
             <Button
               type="button"
               onClick={handleReturn}
