@@ -4,19 +4,9 @@ import { useState, useEffect, useRef, useCallback, memo } from "react"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  Footprints,
-  CornerRightDown,
-  DollarSign,
-  Truck,
-  Shield,
-  Clock,
-  Info,
-  Grid,
-  LinkIcon,
-  LayoutGrid,
-} from "lucide-react"
+import { Footprints, CornerRightDown, DollarSign, Truck, Shield, Clock, Info, Grid, LinkIcon } from "lucide-react"
 import ActionButtons from "./action-buttons"
+import { FenceIcon } from "@/components/icons/fence-icon"
 
 // Add CSS for the slider
 const sliderStyles = `
@@ -373,7 +363,7 @@ function getMinimumDuration(unit) {
 const getItemIcon = (category, itemName = "") => {
   switch (category) {
     case "panels":
-      return <LayoutGrid size={16} className="mr-2 text-[#b82429]" strokeWidth={1.25} />
+      return <FenceIcon size={16} className="mr-2 text-[#b82429]" strokeWidth={1.5} />
     case "feet":
       return <Footprints size={16} className="mr-2 text-[#b82429]" />
     case "connectors":
@@ -393,7 +383,7 @@ const getItemIcon = (category, itemName = "") => {
     default:
       // Fallback based on item name
       if (itemName.includes("Panel") || itemName.includes("Builders")) {
-        return <LayoutGrid size={16} className="mr-2 text-[#b82429]" strokeWidth={1.25} />
+        return <FenceIcon size={16} className="mr-2 text-[#b82429]" strokeWidth={1.5} />
       } else if (itemName.includes("Feet") || itemName.includes("feet")) {
         return <Footprints size={16} className="mr-2 text-[#b82429]" />
       } else if (itemName.includes("Stay") || itemName.includes("Brace")) {
@@ -876,6 +866,7 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
     panelCost += selectedFence.price * panelsNeeded
 
     // Calculate feet needed (1 per panel + 1 extra at end)
+
     const feetNeeded = panelsNeeded + 1
 
     // Add the selected feet option

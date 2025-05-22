@@ -20,8 +20,8 @@ import {
   FileText,
   AlertCircle,
   LinkIcon,
-  LayoutGrid,
 } from "lucide-react"
+import { FenceIcon } from "@/components/icons/fence-icon"
 import Link from "next/link"
 
 export default function QuoteRequestPage() {
@@ -284,7 +284,7 @@ export default function QuoteRequestPage() {
   const getItemIcon = (itemName, category) => {
     switch (category) {
       case "panels":
-        return <LayoutGrid size={16} className="mr-2 text-[#b82429]" strokeWidth={1.25} />
+        return <FenceIcon size={16} className="mr-2 text-[#b82429]" strokeWidth={1.5} />
       case "feet":
         return <Footprints size={16} className="mr-2 text-[#b82429]" />
       case "connectors":
@@ -304,7 +304,7 @@ export default function QuoteRequestPage() {
       default:
         // Fallback based on item name for backward compatibility
         if (itemName?.includes("Panel") || itemName?.includes("Builders")) {
-          return <LayoutGrid size={16} className="mr-2 text-[#b82429]" strokeWidth={1.25} />
+          return <FenceIcon size={16} className="mr-2 text-[#b82429]" strokeWidth={1.5} />
         } else if (itemName?.includes("Feet") || itemName?.includes("feet")) {
           return <Footprints size={16} className="mr-2 text-[#b82429]" />
         } else if (itemName?.includes("Stay") || itemName?.includes("Brace")) {
@@ -462,12 +462,13 @@ export default function QuoteRequestPage() {
         <div className="container mx-auto px-4 py-12 scale-80 origin-top">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Left Column - Quote Summary */}
-            <div>
-              <div className="bg-white rounded-lg shadow-sm overflow-hidden h-full">
+            <div className="space-y-6">
+              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                 {/* Header */}
-                <div className="border-b border-gray-200 p-6 bg-[#b82429] text-white">
-                  <h2 className="font-heading text-xl font-semibold">Quote Summary</h2>
-                </div>
+                <h2 className="font-heading text-xl font-semibold bg-[#b82429] text-white p-3 rounded-t-md flex items-center">
+                  <FileText size={20} className="mr-2 text-white" />
+                  Quote Summary
+                </h2>
 
                 <div className="p-6">
                   {/* Quote Details Section */}
@@ -555,172 +556,176 @@ export default function QuoteRequestPage() {
             </div>
 
             {/* Right Column - Form */}
-            <div>
+            <div className="space-y-6">
               <form id="quote-form" onSubmit={handleSubmit} className="space-y-6">
                 {/* Personal Information */}
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h2 className="font-heading text-xl font-semibold mb-4 bg-[#b82429] text-white p-3 rounded-md flex items-center">
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <h2 className="font-heading text-xl font-semibold bg-[#b82429] text-white p-3 rounded-t-md flex items-center">
                     <User size={20} className="mr-2 text-white" />
                     Personal Information
                   </h2>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-600 mb-1">
-                        First Name <span className="text-red-500">*</span>
-                      </label>
-                      <Input
-                        required
-                        type="text"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
-                      />
+                  <div className="p-6">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-1">
+                          First Name <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          required
+                          type="text"
+                          name="firstName"
+                          value={formData.firstName}
+                          onChange={handleInputChange}
+                          className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-1">
+                          Last Name <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          required
+                          type="text"
+                          name="lastName"
+                          value={formData.lastName}
+                          onChange={handleInputChange}
+                          className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-600 mb-1">
-                        Last Name <span className="text-red-500">*</span>
-                      </label>
-                      <Input
-                        required
-                        type="text"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-600 mb-1">
-                        Email <span className="text-red-500">*</span>
-                      </label>
-                      <Input
-                        required
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
-                      />
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-1">
+                          Email <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          required
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-1">
+                          Phone <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          required
+                          type="tel"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-600 mb-1">
-                        Phone <span className="text-red-500">*</span>
-                      </label>
-                      <Input
-                        required
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Company</label>
-                    <Input
-                      type="text"
-                      name="company"
-                      value={formData.company}
-                      onChange={handleInputChange}
-                      className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
-                    />
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-600 mb-1">Company</label>
+                      <Input
+                        type="text"
+                        name="company"
+                        value={formData.company}
+                        onChange={handleInputChange}
+                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
+                      />
+                    </div>
                   </div>
                 </div>
 
                 {/* Address Information */}
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h2 className="font-heading text-xl font-semibold mb-4 bg-[#b82429] text-white p-3 rounded-md flex items-center">
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <h2 className="font-heading text-xl font-semibold bg-[#b82429] text-white p-3 rounded-t-md flex items-center">
                     <MapPin size={20} className="mr-2 text-white" />
                     Address Information
                   </h2>
 
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Address <span className="text-red-500">*</span>
-                    </label>
-                    <Input
-                      required
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
-                      placeholder="Street address"
-                    />
-                  </div>
+                  <div className="p-6">
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-600 mb-1">
+                        Address <span className="text-red-500">*</span>
+                      </label>
+                      <Input
+                        required
+                        type="text"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleInputChange}
+                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
+                        placeholder="Street address"
+                      />
+                    </div>
 
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-600 mb-1">
-                        City <span className="text-red-500">*</span>
-                      </label>
-                      <Input
-                        required
-                        type="text"
-                        name="city"
-                        value={formData.city}
-                        onChange={handleInputChange}
-                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-600 mb-1">
-                        State <span className="text-red-500">*</span>
-                      </label>
-                      <Input
-                        required
-                        type="text"
-                        name="state"
-                        value={formData.state}
-                        onChange={handleInputChange}
-                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-600 mb-1">
-                        Zip Code <span className="text-red-500">*</span>
-                      </label>
-                      <Input
-                        required
-                        type="text"
-                        name="zip"
-                        value={formData.zip}
-                        onChange={handleInputChange}
-                        className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
-                      />
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-1">
+                          City <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          required
+                          type="text"
+                          name="city"
+                          value={formData.city}
+                          onChange={handleInputChange}
+                          className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-1">
+                          State <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          required
+                          type="text"
+                          name="state"
+                          value={formData.state}
+                          onChange={handleInputChange}
+                          className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-600 mb-1">
+                          Zip Code <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                          required
+                          type="text"
+                          name="zip"
+                          value={formData.zip}
+                          onChange={handleInputChange}
+                          className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Additional Information */}
-                <div className="bg-white rounded-lg shadow-sm p-6">
-                  <h2 className="font-heading text-xl font-semibold mb-4 bg-[#b82429] text-white p-3 rounded-md flex items-center">
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <h2 className="font-heading text-xl font-semibold bg-[#b82429] text-white p-3 rounded-t-md flex items-center">
                     <FileText size={20} className="mr-2 text-white" />
                     Additional Information
                   </h2>
 
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-600 mb-1">
-                      Special Requirements or Notes
-                    </label>
-                    <Textarea
-                      name="message"
-                      value={formData.message}
-                      onChange={handleInputChange}
-                      rows={3}
-                      className="border-2 border-gray-300 rounded-md w-full text-sm bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
-                      placeholder="Please provide any additional information that might help us with your quote..."
-                    />
+                  <div className="p-2">
+                    <div className="mb-2">
+                      <label className="block text-sm font-medium text-gray-600 mb-0.5">
+                        Special Requirements or Notes
+                      </label>
+                      <Textarea
+                        name="message"
+                        value={formData.message}
+                        onChange={handleInputChange}
+                        rows={3}
+                        className="border-2 border-gray-300 rounded-md w-full text-sm bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
+                        placeholder="Please provide any additional information that might help us with your quote..."
+                      />
+                    </div>
                   </div>
-
-                  {/* Removed terms and conditions checkbox */}
                 </div>
               </form>
             </div>
