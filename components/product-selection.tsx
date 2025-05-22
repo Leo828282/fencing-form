@@ -25,29 +25,29 @@ const roboto = Roboto({
 const FENCE_OPTIONS = [
   {
     id: "builders",
-    name: "Builder's Temporary Smart Duty Panels",
-    shortName: "Builder's Temporary Smart Duty Panels",
+    name: "2.4m Builder's Temporary Smart Duty Panels (2.5mm Wire Mesh)",
+    shortName: "2.4m Builder's Temporary Smart Duty Panels (2.5mm Wire Mesh)",
     image: "/images/builders-panel.png",
-    textSize: "text-sm",
+    textSize: "text-xs", // Changed from text-sm to text-xs to accommodate longer text
   },
   {
     id: "premium",
-    name: "Premium Grade Heavy Duty Panels",
-    shortName: "Premium Grade Heavy Duty Panels",
+    name: "2.4m Premium Grade Heavy Duty Panels (4mm Wire Mesh)",
+    shortName: "2.4m Premium Grade Heavy Duty Panels (4mm Wire Mesh)",
     image: "/images/premium-panel.png",
-    textSize: "text-sm",
+    textSize: "text-xs", // Changed from text-sm to text-xs to accommodate longer text
   },
   {
     id: "pool",
-    name: "Temporary Fence Pool Panels",
-    shortName: "Temporary Fence Pool Panels",
+    name: "2.3m Temporary Fence Pool Panels",
+    shortName: "2.3m Temporary Fence Pool Panels",
     image: "/images/pool-panel.png",
     textSize: "text-sm",
   },
   {
     id: "crowd",
-    name: "Crowd Control Barriers",
-    shortName: "Crowd Control Barriers",
+    name: "2.2m Crowd Control Barriers",
+    shortName: "2.2m Crowd Control Barriers",
     image: "/images/crowd-control.png",
     textSize: "text-base",
   },
