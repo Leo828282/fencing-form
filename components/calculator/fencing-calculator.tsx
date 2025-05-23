@@ -637,9 +637,9 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
         // Force recalculation of prices on next render
         if (selectedOption === "purchase") {
           // Delay to ensure state is updated
-          setTimeout(() => recalculatePurchaseTotal(newQuantities), 0)
+          setTimeout(() => recalculatePurchaseTotal({}), 0)
         } else {
-          setTimeout(() => recalculateHireTotal(newQuantities), 0)
+          setTimeout(() => recalculateHireTotal({}), 0)
         }
 
         return newQuantities
@@ -1341,7 +1341,7 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
       <style jsx>{sliderStyles}</style>
       <div className="container mx-auto p-3 py-6">
         <div className="bg-white p-4 md:p-6 rounded-lg shadow-sm">
-          <div className="flex gap-2 mb-4">
+          <div className="flex flex-col sm:flex-row gap-2 mb-4">
             {SELECT_OPTIONS.map((option) => (
               <button
                 key={option.id}
@@ -1562,46 +1562,48 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                 </div>
               </div>
             )}
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-2 text-gray-700">Item:</th>
-                  <th className="text-center py-2 text-gray-700">Qty</th>
-                  <th className="text-right py-2 text-gray-700">Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                {itemsList
-                  .filter((item) => !item.name.includes("Hire Duration") && !item.name.includes("Discount:"))
-                  .map((item, index) => (
-                    <ItemRow
-                      key={index}
-                      item={item}
-                      getItemIcon={getItemIcon}
-                      getItemQuantity={getItemQuantity}
-                      hasCustomQuantity={hasCustomQuantity}
-                      formatPrice={formatPrice}
-                      increaseQuantity={increaseQuantity}
-                      decreaseQuantity={decreaseQuantity}
-                      resetQuantity={resetQuantity}
-                    />
-                  ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t border-gray-200 font-bold">
-                  <td className="py-3 text-[#b82429] font-bold">Total (Incl. GST)</td>
-                  <td></td>
-                  <td className="text-right py-3 text-[#b82429] font-bold">${formatPrice(totalPrice)}</td>
-                </tr>
-              </tfoot>
-              {Object.keys(customQuantities).length > 0 && (
-                <>
-                  <caption className="mt-3 text-sm font-medium text-[#b82429] text-left flex items-center">
-                    <Info size={16} className="mr-2" />* Custom quantities have been manually adjusted
-                  </caption>
-                </>
-              )}
-            </table>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-2 text-gray-700 text-xs">Item:</th>
+                    <th className="text-center py-2 text-gray-700 text-xs">Qty</th>
+                    <th className="text-right py-2 text-gray-700 text-xs">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {itemsList
+                    .filter((item) => !item.name.includes("Hire Duration") && !item.name.includes("Discount:"))
+                    .map((item, index) => (
+                      <ItemRow
+                        key={index}
+                        item={item}
+                        getItemIcon={getItemIcon}
+                        getItemQuantity={getItemQuantity}
+                        hasCustomQuantity={hasCustomQuantity}
+                        formatPrice={formatPrice}
+                        increaseQuantity={increaseQuantity}
+                        decreaseQuantity={decreaseQuantity}
+                        resetQuantity={resetQuantity}
+                      />
+                    ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t border-gray-200 font-bold">
+                    <td className="py-3 text-[#b82429] font-bold text-sm">Total (Incl. GST)</td>
+                    <td></td>
+                    <td className="text-right py-3 text-[#b82429] font-bold text-sm">${formatPrice(totalPrice)}</td>
+                  </tr>
+                </tfoot>
+                {Object.keys(customQuantities).length > 0 && (
+                  <>
+                    <caption className="mt-3 text-sm font-medium text-[#b82429] text-left flex items-center">
+                      <Info size={16} className="mr-2" />* Custom quantities have been manually adjusted
+                    </caption>
+                  </>
+                )}
+              </table>
+            </div>
           </div>
 
           {/* Replace the action buttons section with this: */}
