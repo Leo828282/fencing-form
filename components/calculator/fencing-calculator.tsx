@@ -31,11 +31,12 @@ const sliderStyles = `
 // Memoize the action buttons component
 const MemoizedActionButtons = memo(ActionButtons)
 
-// Fence panel options with their details
+// Fence panel options with their details - using exact naming
 const FENCE_OPTIONS = [
   {
     id: "builders",
     name: "Builder's Temporary Smart Duty Panels (2.5mm Wire Mesh)",
+    displayName: "Builder's Temporary Smart Duty",
     length: 2.4,
     price: 50,
     hirePrice: 5,
@@ -49,6 +50,7 @@ const FENCE_OPTIONS = [
   {
     id: "premium",
     name: "Premium Grade Heavy Duty Panels (4mm Wire Mesh)",
+    displayName: "Premium Grade Heavy Duty",
     length: 2.4,
     price: 80,
     hirePrice: 8,
@@ -61,6 +63,7 @@ const FENCE_OPTIONS = [
   {
     id: "pool",
     name: "Temporary Fence Pool Panels",
+    displayName: "Temporary Fence Pool Panels",
     length: 2.3,
     price: 95,
     hirePrice: 5,
@@ -74,6 +77,7 @@ const FENCE_OPTIONS = [
   {
     id: "crowd",
     name: "Crowd Control Barriers",
+    displayName: "Crowd Control Barriers",
     length: 2.2,
     price: 57,
     hirePrice: 5,
@@ -125,7 +129,7 @@ const ADDITIONAL_ITEMS_FULL = {
   delivery: { name: "Delivery Fee", price: 150, hirePrice: 150 },
 }
 
-// Update options to show Purchase and Hire
+// Update options to show Purchase and Hire - using exact naming
 const SELECT_OPTIONS = [
   { id: "purchase", label: "Purchase" },
   { id: "hire", label: "Hire" },
@@ -391,7 +395,7 @@ const ItemRow = memo(
         <td className="py-2">
           <div className="flex items-center">
             {getItemIcon(item.category, item.name)}
-            <span className="text-gray-900">{item.name}</span>
+            <span className="text-gray-800 font-medium">{item.name}</span>
           </div>
         </td>
         <td className="text-center py-2">
@@ -406,7 +410,9 @@ const ItemRow = memo(
               >
                 -
               </button>
-              <span className={`px-2 text-gray-900 ${hasCustomQuantity(item) ? "text-[#b82429] font-medium" : ""}`}>
+              <span
+                className={`px-2 text-gray-800 font-medium ${hasCustomQuantity(item) ? "text-[#b82429] font-bold" : ""}`}
+              >
                 {getItemQuantity(item)}
                 {hasCustomQuantity(item) && <span className="text-[#b82429] font-bold ml-1 text-sm">*</span>}
               </span>
@@ -636,20 +642,10 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
     [customQuantities],
   )
 
-  // Helper function to get summary panel names
+  // Helper function to get summary panel names - using exact display names
   const getPanelSummaryName = useCallback((panelId) => {
-    switch (panelId) {
-      case "premium":
-        return "Heavy Duty Panel"
-      case "builders":
-        return "Builders Duty Panels"
-      case "pool":
-        return "Fence Pool Panels"
-      case "crowd":
-        return "Crowd Control Barriers"
-      default:
-        return "Panel"
-    }
+    const fence = FENCE_OPTIONS.find((option) => option.id === panelId)
+    return fence ? fence.displayName : "Panel"
   }, [])
 
   // Get the duration in days (for calculation)
@@ -754,12 +750,25 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
         metersRequired,
         hireDuration,
         durationUnit,
+        totalCost: totalPrice,
+        timestamp: Date.now(), // Add timestamp for tracking
+        step: "calculator", // Track which step user is on
+        source: "Calculator Enquiry", // Add source tracking
       }
 
       console.log("Saving config with feet option:", selectedFeetOption)
       localStorage.setItem("fencingCalculatorConfig", JSON.stringify(config))
     }
-  }, [configLoaded, selectedFenceType, selectedOption, selectedFeetOption, metersRequired, hireDuration, durationUnit])
+  }, [
+    configLoaded,
+    selectedFenceType,
+    selectedOption,
+    selectedFeetOption,
+    metersRequired,
+    hireDuration,
+    durationUnit,
+    totalPrice,
+  ])
 
   // Ensure minimum duration is maintained when duration unit changes
   useEffect(() => {
@@ -991,7 +1000,7 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
         removalFee,
         selectedFeetOption,
         includeDelivery,
-        deliveryFee,
+        ADDITIONAL_ITEMS_FULL.delivery.price,
       )
 
       // Only create and set the items list if we're in hire mode
@@ -1229,6 +1238,8 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
         hireDuration,
         durationUnit,
         totalCost: totalPrice,
+        source: "Calculator Enquiry",
+        enquiryType: "Multi Form Enquiry",
       }
       localStorage.setItem("fencingCalculatorConfig", JSON.stringify(config))
 
@@ -1253,6 +1264,8 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
         durationUnit,
         selectedFenceType,
         selectedFeetOption,
+        source: "Calculator Enquiry",
+        enquiryType: "Multi Form Enquiry",
       }
       localStorage.setItem("calculatorState", JSON.stringify(calculatorState))
     }
@@ -1279,8 +1292,8 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                 onClick={() => setSelectedOption(option.id)}
                 className={`flex-1 py-3 text-center transition-all duration-200 text-lg font-medium rounded-none border-2 ${
                   selectedOption === option.id
-                    ? "bg-[#b82429]/10 border-[#b82429] text-[#b82429]"
-                    : "bg-white border-[#b82429] text-[#b82429] hover:bg-gray-50"
+                    ? "bg-[#b82429] border-[#b82429] text-white"
+                    : "bg-white border-[#b82429] text-[#b82429] hover:bg-[#b82429] hover:text-white"
                 }`}
               >
                 {option.label}
@@ -1293,8 +1306,8 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
               <h3 className="font-heading font-bold text-base mb-2 text-gray-900">Select Fence Panel Options</h3>
               <Select value={selectedFenceType} onValueChange={setSelectedFenceType}>
                 <SelectTrigger
-                  className={`w-full border border-gray-300 rounded-md h-12 ${
-                    selectedFenceType ? "bg-gray-100" : "bg-white"
+                  className={`w-full border-2 border-gray-400 rounded-md h-12 text-gray-900 font-medium ${
+                    selectedFenceType ? "bg-gray-50 border-[#b82429]" : "bg-white"
                   }`}
                 >
                   <SelectValue placeholder="Select Fence Panel Options" />
@@ -1317,8 +1330,8 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
               <h3 className="font-heading font-bold text-base mb-2 text-gray-900">Select Feet Option</h3>
               <Select value={selectedFeetOption} onValueChange={setSelectedFeetOption}>
                 <SelectTrigger
-                  className={`w-full border border-gray-300 rounded-md h-12 ${
-                    selectedFeetOption ? "bg-gray-100" : "bg-white"
+                  className={`w-full border-2 border-gray-400 rounded-md h-12 text-gray-900 font-medium ${
+                    selectedFeetOption ? "bg-gray-50 border-[#b82429]" : "bg-white"
                   }`}
                 >
                   <SelectValue placeholder="Select Feet Option" />
@@ -1352,7 +1365,7 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                     setMetersRequired(Math.min(800, Math.max(1, value)))
                   }
                 }}
-                className="border border-gray-300 rounded-none h-12 mb-2 bg-white text-gray-900"
+                className="border-2 border-gray-400 rounded-none h-12 mb-2 bg-white text-gray-900 font-medium focus:border-[#b82429] focus:ring-2 focus:ring-[#b82429]/20"
               />
               <div className="slider-container relative h-2 bg-gray-300 rounded-full">
                 <div ref={metersSliderFillRef} className="absolute top-0 left-0 h-full bg-[#b82429] rounded-full"></div>
@@ -1390,8 +1403,8 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                   <span className="text-sm mr-2 text-gray-900">Unit:</span>
                   <Select value={durationUnit} onValueChange={handleDurationUnitChange}>
                     <SelectTrigger
-                      className={`w-[100px] h-10 text-sm border border-gray-300 rounded-md ${
-                        durationUnit ? "bg-gray-100" : "bg-white"
+                      className={`w-[100px] h-10 text-sm border-2 border-gray-400 rounded-md text-gray-900 font-medium ${
+                        durationUnit ? "bg-gray-50 border-[#b82429]" : "bg-white"
                       }`}
                     >
                       <SelectValue placeholder="Unit" />
@@ -1422,7 +1435,7 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                       setHireDuration(Math.min(getMaxDuration(), Math.max(getMinimumDuration(durationUnit), value)))
                     }
                   }}
-                  className="border border-gray-300 rounded-none h-12 mb-2 bg-white text-gray-900"
+                  className="border-2 border-gray-400 rounded-none h-12 mb-2 bg-white text-gray-900 font-medium focus:border-[#b82429] focus:ring-2 focus:ring-[#b82429]/20"
                 />
                 <div className="slider-container relative h-2 bg-gray-300 rounded-full">
                   <div
@@ -1497,9 +1510,9 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-2 text-gray-900 text-xs font-medium">Item:</th>
-                    <th className="text-center py-2 text-gray-900 text-xs font-medium">Qty</th>
-                    <th className="text-right py-2 text-gray-900 text-xs font-medium">Price</th>
+                    <th className="text-left py-2 text-gray-800 text-xs font-bold">Item:</th>
+                    <th className="text-center py-2 text-gray-800 text-xs font-bold">Qty</th>
+                    <th className="text-right py-2 text-gray-800 text-xs font-bold">Price</th>
                   </tr>
                 </thead>
                 <tbody>

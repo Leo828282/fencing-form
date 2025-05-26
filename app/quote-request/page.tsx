@@ -38,7 +38,7 @@ export default function QuoteRequestPage() {
     company: "",
     address: "",
     city: "",
-    state: "NSW", // Default state
+    state: "", // Remove default state to force selection
     zip: "",
     message: "",
   })
@@ -677,14 +677,23 @@ export default function QuoteRequestPage() {
                         <label className="block text-sm font-medium text-gray-600 mb-1">
                           State <span className="text-red-500">*</span>
                         </label>
-                        <Input
+                        <select
                           required
-                          type="text"
                           name="state"
                           value={formData.state}
                           onChange={handleInputChange}
-                          className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
-                        />
+                          className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none px-3"
+                        >
+                          <option value="">Select State</option>
+                          <option value="NSW">NSW</option>
+                          <option value="VIC">VIC</option>
+                          <option value="QLD">QLD</option>
+                          <option value="WA">WA</option>
+                          <option value="SA">SA</option>
+                          <option value="TAS">TAS</option>
+                          <option value="ACT">ACT</option>
+                          <option value="NT">NT</option>
+                        </select>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-600 mb-1">

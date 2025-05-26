@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
-import { ChevronRight, Ruler, Clock } from "lucide-react"
+import { ChevronRight, Ruler, Clock, ChevronDown, Check } from "lucide-react"
 import { Lato } from "next/font/google"
 import { Button } from "@/components/ui/button"
 
@@ -43,6 +43,60 @@ function getMaxDuration(durationUnit) {
   return 1
 }
 
+// Custom Unit Picker Component
+function UnitPicker({ value, onChange }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [])
+
+  const selectedUnit = DURATION_UNITS.find((unit) => unit.id === value)
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-between w-32 h-10 px-3 py-2 text-sm font-medium text-gray-900 bg-white border-2 border-red-500 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+      >
+        <span>{selectedUnit?.label}</span>
+        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg">
+          {DURATION_UNITS.map((unit) => (
+            <button
+              key={unit.id}
+              type="button"
+              onClick={() => {
+                onChange(unit.id)
+                setIsOpen(false)
+              }}
+              className="flex items-center justify-between w-full px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 focus:outline-none focus:bg-gray-50 first:rounded-t-md last:rounded-b-md"
+            >
+              <span>{unit.label}</span>
+              {value === unit.id && <Check className="w-4 h-4 text-green-600" />}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function AdjustmentsSelection() {
   const router = useRouter()
   const [metersRequired, setMetersRequired] = useState(10)
@@ -69,15 +123,39 @@ export default function AdjustmentsSelection() {
     }
   }, [])
 
-  // Update slider fill when values change
+  // Update slider fill when values change - with better timing
   useEffect(() => {
-    updateSliderFill()
-    // Set a small timeout to ensure the DOM has fully rendered
-    const timeoutId = setTimeout(updateSliderFill, 50)
-    return () => clearTimeout(timeoutId)
-  }, [metersRequired, hireDuration, durationUnit])
+    // Use requestAnimationFrame to ensure DOM is fully rendered
+    const updateFills = () => {
+      requestAnimationFrame(() => {
+        updateSliderFill()
+      })
+    }
 
-  // Update the slider fill
+    updateFills()
+
+    // Also set a backup timeout
+    const timeoutId = setTimeout(updateFills, 100)
+    return () => clearTimeout(timeoutId)
+  }, [metersRequired, hireDuration, durationUnit, selectedOption])
+
+  // Force update when hire is selected
+  useEffect(() => {
+    if (selectedOption === "hire") {
+      // Multiple attempts to ensure the slider fill appears
+      const timeouts = [50, 100, 200].map((delay) =>
+        setTimeout(() => {
+          requestAnimationFrame(() => {
+            updateSliderFill()
+          })
+        }, delay),
+      )
+
+      return () => timeouts.forEach(clearTimeout)
+    }
+  }, [selectedOption, hireDuration, durationUnit])
+
+  // Update the slider fill function with better error handling
   const updateSliderFill = () => {
     // Update the meters slider fill
     if (metersSliderRef.current && metersSliderFillRef.current) {
@@ -89,15 +167,16 @@ export default function AdjustmentsSelection() {
       // Get the slider's width
       const sliderWidth = metersSliderRef.current.offsetWidth
 
-      // Calculate the fill width based on the percentage
-      const fillWidth = (percentage / 100) * sliderWidth
-
-      // Update the fill element's width
-      metersSliderFillRef.current.style.width = `${fillWidth}px`
+      if (sliderWidth > 0) {
+        // Calculate the fill width based on the percentage
+        const fillWidth = (percentage / 100) * sliderWidth
+        // Update the fill element's width
+        metersSliderFillRef.current.style.width = `${fillWidth}px`
+      }
     }
 
-    // Update the duration slider fill
-    if (durationSliderRef.current && durationSliderFillRef.current && durationUnit) {
+    // Update the duration slider fill (only if hire is selected and elements exist)
+    if (selectedOption === "hire" && durationSliderRef.current && durationSliderFillRef.current && durationUnit) {
       const min = getMinimumDuration(durationUnit)
       const max = getMaxDuration(durationUnit)
       const val = hireDuration || min
@@ -106,11 +185,12 @@ export default function AdjustmentsSelection() {
       // Get the slider's width
       const sliderWidth = durationSliderRef.current.offsetWidth
 
-      // Calculate the fill width based on the percentage
-      const fillWidth = (percentage / 100) * sliderWidth
-
-      // Update the fill element's width
-      durationSliderFillRef.current.style.width = `${fillWidth}px`
+      if (sliderWidth > 0) {
+        // Calculate the fill width based on the percentage
+        const fillWidth = (percentage / 100) * sliderWidth
+        // Update the fill element's width
+        durationSliderFillRef.current.style.width = `${fillWidth}px`
+      }
     }
   }
 
@@ -187,7 +267,7 @@ export default function AdjustmentsSelection() {
           transition={{ duration: 0.5 }}
           className="text-center mb-8"
         >
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">Adjust your requirements</h1>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-gray-900">Adjust your requirements</h1>
           <p className="text-gray-600 flex items-center justify-center">
             I have it figured out calculate my costs
             <motion.span
@@ -206,7 +286,7 @@ export default function AdjustmentsSelection() {
           <div className="mb-8">
             <div className="flex items-center mb-4">
               <Ruler size={24} className="mr-2 text-[#b82429]" />
-              <h3 className="text-xl font-bold">Meters of Fencing Required</h3>
+              <h3 className="text-xl font-bold text-gray-900">Meters of Fencing Required</h3>
             </div>
 
             <div className="mb-4">
@@ -217,7 +297,7 @@ export default function AdjustmentsSelection() {
                 value={metersRequired}
                 onChange={handleMetersChange}
                 onBlur={handleMetersBlur}
-                className="w-full border border-gray-300 rounded-md h-12 px-3 mb-2"
+                className="w-full border-2 border-gray-300 rounded-md h-12 px-3 mb-2 text-gray-900 font-medium focus:border-[#b82429] focus:outline-none transition-colors"
               />
               <div className="slider-container">
                 <div ref={metersSliderFillRef} className="slider-fill"></div>
@@ -247,24 +327,12 @@ export default function AdjustmentsSelection() {
             <div className="mb-8">
               <div className="flex items-center mb-4">
                 <Clock size={24} className="mr-2 text-[#b82429]" />
-                <h3 className="text-xl font-bold">Hire Duration</h3>
+                <h3 className="text-xl font-bold text-gray-900">Hire Duration</h3>
               </div>
 
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-sm font-medium">Duration:</span>
-                <div className="flex items-center">
-                  <select
-                    value={durationUnit}
-                    onChange={(e) => setDurationUnit(e.target.value)}
-                    className="ml-2 border border-gray-300 rounded-md h-10 px-2"
-                  >
-                    {DURATION_UNITS.map((unit) => (
-                      <option key={unit.id} value={unit.id}>
-                        {unit.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-sm font-medium text-gray-700">Unit:</span>
+                <UnitPicker value={durationUnit} onChange={setDurationUnit} />
               </div>
 
               <div className="mb-4">
@@ -275,7 +343,7 @@ export default function AdjustmentsSelection() {
                   value={hireDuration}
                   onChange={handleDurationChange}
                   onBlur={handleDurationBlur}
-                  className="w-full border border-gray-300 rounded-md h-12 px-3 mb-2"
+                  className="w-full border-2 border-gray-300 rounded-md h-12 px-3 mb-2 text-gray-900 font-medium focus:border-[#b82429] focus:outline-none transition-colors"
                 />
                 <div className="slider-container">
                   <div ref={durationSliderFillRef} className="slider-fill"></div>
@@ -310,7 +378,7 @@ export default function AdjustmentsSelection() {
 
           <Button
             onClick={handleContinue}
-            className="w-full bg-[#b82429] hover:bg-[#9e1f23] text-white py-4 text-lg font-medium rounded-md"
+            className="w-full bg-[#b82429] hover:bg-[#9e1f23] text-white py-4 text-lg font-medium rounded-md transition-colors"
           >
             Calculate My Costs
           </Button>
