@@ -161,9 +161,7 @@ function calculateFencingCost(
   if (length <= 0) throw new Error("Length must be greater than 0")
   if (duration <= 0) throw new Error("Duration must be greater than 0")
   if (!panelType) throw new Error("Panel type is required")
-  if (!durationUnit || typeof durationUnit !== "string" || durationUnit.trim() === "") {
-    throw new Error("Duration unit is required and must be a non-empty string")
-  }
+  if (!durationUnit) throw new Error("Duration unit is required and must be a non-empty string")
 
   // Enforce minimum duration based on unit
   const durationUnitObj = DURATION_UNITS.find((unit) => unit.id === durationUnit)
@@ -993,7 +991,7 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
         removalFee,
         selectedFeetOption,
         includeDelivery,
-        isDeliveryCalculated ? calculatedDeliveryFee : 0,
+        deliveryFee,
       )
 
       // Only create and set the items list if we're in hire mode
@@ -1301,12 +1299,12 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                 >
                   <SelectValue placeholder="Select Fence Panel Options" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-gray-300 shadow-lg z-50">
                   {FENCE_OPTIONS.map((option) => (
                     <SelectItem
                       key={option.id}
                       value={option.id}
-                      className={selectedFenceType === option.id ? "bg-gray-100" : ""}
+                      className={`bg-white hover:bg-gray-100 ${selectedFenceType === option.id ? "bg-gray-100" : ""}`}
                     >
                       {option.name}
                     </SelectItem>
@@ -1325,12 +1323,12 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                 >
                   <SelectValue placeholder="Select Feet Option" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-gray-300 shadow-lg z-50">
                   {FEET_OPTIONS.map((option) => (
                     <SelectItem
                       key={option.id}
                       value={option.id}
-                      className={selectedFeetOption === option.id ? "bg-gray-100" : ""}
+                      className={`bg-white hover:bg-gray-100 ${selectedFeetOption === option.id ? "bg-gray-100" : ""}`}
                     >
                       {option.name}
                     </SelectItem>
@@ -1398,12 +1396,12 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                     >
                       <SelectValue placeholder="Unit" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white border border-gray-300 shadow-lg z-50">
                       {DURATION_UNITS.map((unit) => (
                         <SelectItem
                           key={unit.id}
                           value={unit.id}
-                          className={durationUnit === unit.id ? "bg-gray-100" : ""}
+                          className={`bg-white hover:bg-gray-100 ${durationUnit === unit.id ? "bg-gray-100" : ""}`}
                         >
                           {unit.label}
                         </SelectItem>

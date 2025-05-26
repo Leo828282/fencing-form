@@ -382,11 +382,12 @@ export default function QuoteRequestPage() {
           <h1 className="font-heading text-4xl font-semibold text-center mb-4">Quote Submitted</h1>
 
           <div className="bg-white p-8 md:p-12 rounded-lg shadow-sm max-w-3xl mx-auto">
+            {/* Update the following section */}
             <div className="flex flex-col items-center justify-center mb-8">
-              <div className="inline-flex items-center justify-center w-28 h-28 rounded-full bg-green-100 mb-6 animate-bounce-slow">
+              <div className="inline-flex items-center justify-center w-28 h-28 rounded-full bg-red-100 mb-6 animate-bounce-slow">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-16 w-16 text-green-600"
+                  className="h-16 w-16 text-[#b82429]"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
