@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
 
@@ -11,7 +10,6 @@ interface ActionButtonsProps {
 }
 
 export default function ActionButtons({ onGetQuote, onBookCall }: ActionButtonsProps) {
-  const router = useRouter()
   const [isQuoteLoading, setIsQuoteLoading] = useState(false)
   const [isBookingLoading, setIsBookingLoading] = useState(false)
 
@@ -24,7 +22,6 @@ export default function ActionButtons({ onGetQuote, onBookCall }: ActionButtonsP
     } catch (error) {
       console.error("Error getting quote:", error)
     } finally {
-      // Add a small delay to ensure the loading state is visible
       setTimeout(() => {
         setIsQuoteLoading(false)
       }, 300)
@@ -33,12 +30,8 @@ export default function ActionButtons({ onGetQuote, onBookCall }: ActionButtonsP
 
   const handleBookCall = () => {
     setIsBookingLoading(true)
-    console.log("Book a Call button clicked")
-
-    // Most direct approach - use window.location for reliability
     window.location.href = "/book-a-call"
 
-    // Reset loading state after a delay
     setTimeout(() => {
       setIsBookingLoading(false)
     }, 1000)
