@@ -2,21 +2,33 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import ProductSelection from "@/components/product-selection"
 
 export default function HomePage() {
   const router = useRouter()
 
+  // Reset the configuration when landing on the home page
   useEffect(() => {
-    // Redirect to calculator page
-    router.push("/calculator")
-  }, [router])
+    // Keep any existing configuration but mark that we're starting a new session
+    const savedConfig = localStorage.getItem("fencingCalculatorConfig")
+    if (savedConfig) {
+      const config = JSON.parse(savedConfig)
+      localStorage.setItem(
+        "fencingCalculatorConfig",
+        JSON.stringify({
+          ...config,
+          newSession: true,
+        }),
+      )
+    } else {
+      localStorage.setItem(
+        "fencingCalculatorConfig",
+        JSON.stringify({
+          newSession: true,
+        }),
+      )
+    }
+  }, [])
 
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4">Capri Fencing Calculator</h1>
-        <p>Redirecting to calculator...</p>
-      </div>
-    </div>
-  )
+  return <ProductSelection />
 }
