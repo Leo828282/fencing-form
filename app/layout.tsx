@@ -2,22 +2,22 @@ import type React from "react"
 import type { Metadata } from "next"
 import "./globals.css"
 import IframeHandler from "@/components/iframe-handler"
-import { Titillium_Web, Open_Sans } from "next/font/google"
+import { Poppins, Be_Vietnam_Pro } from "next/font/google"
 import Script from "next/script"
 
 // Optimize font loading with display: swap
-const titilliumWeb = Titillium_Web({
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
-  display: "swap",
-  variable: "--font-titillium-web",
-})
-
-const openSans = Open_Sans({
+const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
-  variable: "--font-open-sans",
+  variable: "--font-poppins",
+})
+
+const beVietnamPro = Be_Vietnam_Pro({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-be-vietnam-pro",
 })
 
 export const metadata: Metadata = {
@@ -42,7 +42,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className={`${titilliumWeb.variable} ${openSans.variable} font-sans bg-white`}>
+      <body className={`${poppins.variable} ${beVietnamPro.variable} font-sans bg-white`}>
         <IframeHandler />
         {children}
 

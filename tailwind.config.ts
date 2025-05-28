@@ -11,8 +11,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-open-sans)", "system-ui", "sans-serif"],
-        heading: ["var(--font-titillium-web)", "system-ui", "sans-serif"],
+        sans: ["var(--font-poppins)", "system-ui", "sans-serif"],
+        heading: ["var(--font-be-vietnam-pro)", "system-ui", "sans-serif"],
       },
       colors: {
         background: "hsl(var(--background))",

@@ -449,7 +449,7 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
   const [selectedFenceType, setSelectedFenceType] = useState(FENCE_OPTIONS[0].id)
   const [selectedOption, setSelectedOption] = useState(SELECT_OPTIONS[0].id)
   const [selectedFeetOption, setSelectedFeetOption] = useState(FEET_OPTIONS[0].id)
-  const [metersRequired, setMetersRequired] = useState(10)
+  const [metersRequired, setMetersRequired] = useState(100)
   const [hireDuration, setHireDuration] = useState(10)
   const [durationUnit, setDurationUnit] = useState(DURATION_UNITS[1].id) // Default to weeks
   const [itemsList, setItemsList] = useState([])

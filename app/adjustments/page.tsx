@@ -35,7 +35,7 @@ function getMaxDuration(durationUnit) {
 
 export default function AdjustmentsPage() {
   const router = useRouter()
-  const [metersRequired, setMetersRequired] = useState(10)
+  const [metersRequired, setMetersRequired] = useState(100)
   const [hireDuration, setHireDuration] = useState(10)
   const [durationUnit, setDurationUnit] = useState("weeks")
   const [selectedOption, setSelectedOption] = useState("hire") // Default to hire
