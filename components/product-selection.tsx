@@ -28,28 +28,28 @@ const FENCE_OPTIONS = [
     name: "2.4m Builder's Temporary Smart Duty Panels (2.5mm Wire Mesh)",
     shortName: "2.4m Builder's Temporary Smart Duty Panels (2.5mm Wire Mesh)",
     image: "/images/builders-panel.png",
-    textSize: "text-xs", // Changed from text-sm to text-xs to accommodate longer text
+    textSize: "text-[10px] md:text-xs",
   },
   {
     id: "premium",
     name: "2.4m Premium Grade Heavy Duty Panels (4mm Wire Mesh)",
     shortName: "2.4m Premium Grade Heavy Duty Panels (4mm Wire Mesh)",
     image: "/images/premium-panel.png",
-    textSize: "text-xs", // Changed from text-sm to text-xs to accommodate longer text
+    textSize: "text-[10px] md:text-xs",
   },
   {
     id: "pool",
     name: "2.3m Temporary Fence Pool Panels",
     shortName: "2.3m Temporary Fence Pool Panels",
     image: "/images/pool-panel.png",
-    textSize: "text-sm",
+    textSize: "text-xs md:text-sm",
   },
   {
     id: "crowd",
     name: "2.2m Crowd Control Barriers",
     shortName: "2.2m Crowd Control Barriers",
     image: "/images/crowd-control.png",
-    textSize: "text-base",
+    textSize: "text-sm md:text-base",
   },
 ]
 
@@ -81,7 +81,7 @@ export default function ProductSelection() {
 
   return (
     <PageLayout title="Select what you're looking for!" currentStep={1} totalSteps={5}>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 w-full">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-8 lg:gap-10 w-full">
         {FENCE_OPTIONS.map((option) => (
           <motion.div
             key={option.id}
@@ -92,16 +92,15 @@ export default function ProductSelection() {
               y: -5,
               boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
             }}
-            className="relative cursor-pointer overflow-hidden shadow-md bg-white"
+            className="relative cursor-pointer overflow-hidden shadow-md bg-white h-80 md:h-[400px]"
             onClick={() => handleFenceTypeSelect(option.id)}
             onMouseEnter={() => setHoveredFenceType(option.id)}
             onMouseLeave={() => setHoveredFenceType(null)}
-            style={{ height: "400px" }}
           >
             <div className="relative h-full w-full">
               {/* Image container - now with overlay */}
               <div className="h-full w-full relative bg-white flex items-center justify-center">
-                <div className="h-[340px] w-full flex items-center justify-center">
+                <div className="h-[260px] md:h-[340px] w-full flex items-center justify-center">
                   {/* Black overlay - covers the entire image area */}
                   <div className="absolute inset-0 bg-black z-10" style={{ opacity: 0.043 }}></div>
                   <img
@@ -113,7 +112,7 @@ export default function ProductSelection() {
 
                 {/* Product name banner */}
                 <div
-                  className={`absolute bottom-0 left-0 right-0 bg-[#b82429] text-white py-4 text-center font-medium h-[60px] flex items-center justify-center transition-opacity duration-300 z-20 ${
+                  className={`absolute bottom-0 left-0 right-0 bg-[#b82429] text-white py-4 text-center font-medium h-12 md:h-[60px] flex items-center justify-center transition-opacity duration-300 z-20 ${
                     hoveredFenceType === option.id ? "opacity-0" : "opacity-100"
                   }`}
                 >
@@ -126,7 +125,7 @@ export default function ProductSelection() {
                     hoveredFenceType === option.id ? "opacity-100" : "opacity-0 pointer-events-none"
                   }`}
                 >
-                  <div className="text-white font-bold text-2xl tracking-wide">SELECT OPTION</div>
+                  <div className="text-white font-bold text-lg md:text-2xl tracking-wide">SELECT OPTION</div>
                 </div>
               </div>
             </div>
