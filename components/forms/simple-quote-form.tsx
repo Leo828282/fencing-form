@@ -559,7 +559,7 @@ export default function SimpleQuoteForm({
                       </div>
                       <div>
                         <label className="block text-sm mb-2 text-[#cccccc] font-medium">
-                          Postal code <span className="text-[#B82429]">*</span>
+                          Post Code <span className="text-[#B82429]">*</span>
                         </label>
                         <Input
                           name="postalCode"
@@ -568,7 +568,7 @@ export default function SimpleQuoteForm({
                           className={`bg-[#252525] border-[#333333] text-white h-14 focus:border-[#B82429] focus:ring-[#B82429] transition-all ${
                             errors.postalCode ? "border-[#B82429]" : ""
                           }`}
-                          placeholder="Postal Code"
+                          placeholder="Post Code"
                         />
                         {errors.postalCode && (
                           <p className="text-[#B82429] text-xs mt-1 flex items-center">

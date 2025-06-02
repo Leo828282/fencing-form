@@ -39,7 +39,7 @@ export default function QuoteRequestPage() {
     address: "",
     city: "",
     state: "", // Remove default state to force selection
-    zip: "",
+    postCode: "",
     message: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -173,7 +173,7 @@ export default function QuoteRequestPage() {
       !formData.address ||
       !formData.city ||
       !formData.state ||
-      !formData.zip
+      !formData.postCode
       // Removed termsAccepted check
     ) {
       alert("Please fill in all required fields.")
@@ -378,81 +378,85 @@ export default function QuoteRequestPage() {
   return (
     <div className="w-full min-h-screen font-sans" style={{ backgroundColor: "white" }}>
       {showSuccess ? (
-        <div className="container mx-auto px-4 py-12 scale-80 origin-top">
-          <div className="bg-white p-8 md:p-12 rounded-lg shadow-sm max-w-3xl mx-auto">
-            {/* Update the following section */}
-            <div className="flex flex-col items-center justify-center mb-8">
-              <div className="inline-flex items-center justify-center w-28 h-28 rounded-full bg-red-100 mb-6 animate-bounce-slow">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-16 w-16 text-[#b82429]"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h2 className="text-3xl font-bold mb-2 text-[#b82429]">THANK YOU!</h2>
-              <h3 className="text-2xl font-semibold mb-4 text-gray-800">Your Quote Request Has Been Submitted</h3>
-              <div className="w-24 h-1 bg-[#b82429] rounded-full mb-6"></div>
-            </div>
-
-            {/* Quote Summary */}
-            <div className="bg-gray-50 p-6 rounded-lg mb-8 max-w-2xl mx-auto border border-gray-100">
-              <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
-                <FileText size={20} className="mr-2 text-[#b82429]" />
-                Quote Summary
-              </h4>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="bg-white p-4 rounded-md border border-gray-100">
-                  <p className="text-sm text-gray-500 mb-1">Fence Type</p>
-                  <p className="font-medium text-gray-800">{getFenceTypeDisplayName(quoteDetails.selectedFenceType)}</p>
+        <div className="min-h-screen flex items-start justify-center px-4 pt-16 md:pt-24">
+          <div className="container mx-auto scale-80 origin-center">
+            <div className="bg-white p-8 md:p-12 rounded-lg shadow-sm max-w-3xl mx-auto my-8">
+              {/* Update the following section */}
+              <div className="flex flex-col items-center justify-center mb-8">
+                <div className="inline-flex items-center justify-center w-28 h-28 rounded-full bg-red-100 mb-6 animate-bounce-slow">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-16 w-16 text-[#b82429]"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
                 </div>
-                <div className="bg-white p-4 rounded-md border border-gray-100">
-                  <p className="text-sm text-gray-500 mb-1">Option</p>
-                  <p className="font-medium text-gray-800">
-                    {quoteDetails.selectedOption === "purchase" ? "Purchase" : "Hire"}
-                  </p>
-                </div>
-                <div className="bg-white p-4 rounded-md border border-gray-100">
-                  <p className="text-sm text-gray-500 mb-1">Length Required</p>
-                  <p className="font-medium text-gray-800">{quoteDetails.metersRequired}m</p>
-                </div>
-                <div className="bg-white p-4 rounded-md border border-gray-100">
-                  <p className="text-sm text-gray-500 mb-1">Total Price</p>
-                  <p className="font-medium text-[#b82429]">${formatPrice(quoteDetails.totalPrice)}</p>
-                </div>
+                <h2 className="text-3xl font-bold mb-2 text-[#b82429]">THANK YOU!</h2>
+                <h3 className="text-2xl font-semibold mb-4 text-gray-800">Your Quote Request Has Been Submitted</h3>
+                <div className="w-24 h-1 bg-[#b82429] rounded-full mb-6"></div>
               </div>
 
-              <div className="text-center text-sm text-gray-500">
-                Quote reference: #
-                {Math.floor(Math.random() * 10000)
-                  .toString()
-                  .padStart(4, "0")}
-                -{new Date().getFullYear()}
+              {/* Quote Summary */}
+              <div className="bg-gray-50 p-6 rounded-lg mb-8 max-w-2xl mx-auto border border-gray-100">
+                <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+                  <FileText size={20} className="mr-2 text-[#b82429]" />
+                  Quote Summary
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="bg-white p-4 rounded-md border border-gray-100">
+                    <p className="text-sm text-gray-500 mb-1">Fence Type</p>
+                    <p className="font-medium text-gray-800">
+                      {getFenceTypeDisplayName(quoteDetails.selectedFenceType)}
+                    </p>
+                  </div>
+                  <div className="bg-white p-4 rounded-md border border-gray-100">
+                    <p className="text-sm text-gray-500 mb-1">Option</p>
+                    <p className="font-medium text-gray-800">
+                      {quoteDetails.selectedOption === "purchase" ? "Purchase" : "Hire"}
+                    </p>
+                  </div>
+                  <div className="bg-white p-4 rounded-md border border-gray-100">
+                    <p className="text-sm text-gray-500 mb-1">Length Required</p>
+                    <p className="font-medium text-gray-800">{quoteDetails.metersRequired}m</p>
+                  </div>
+                  <div className="bg-white p-4 rounded-md border border-gray-100">
+                    <p className="text-sm text-gray-500 mb-1">Total Price</p>
+                    <p className="font-medium text-[#b82429]">${formatPrice(quoteDetails.totalPrice)}</p>
+                  </div>
+                </div>
+
+                <div className="text-center text-sm text-gray-500">
+                  Quote reference: #
+                  {Math.floor(Math.random() * 10000)
+                    .toString()
+                    .padStart(4, "0")}
+                  -{new Date().getFullYear()}
+                </div>
               </div>
-            </div>
 
-            <div className="text-center space-y-4">
-              <p className="text-gray-700 text-lg">
-                We've received your request and our team will review your quote details promptly.
-              </p>
-              <p className="text-gray-700 font-medium">
-                A confirmation has been sent to <span className="text-[#b82429]">{formData.email}</span>
-              </p>
-              <p className="text-gray-700">
-                We'll be in touch within 24 hours to discuss your requirements and finalize your quote.
-              </p>
+              <div className="text-center space-y-4">
+                <p className="text-gray-700 text-lg">
+                  We've received your request and our team will review your quote details promptly.
+                </p>
+                <p className="text-gray-700 font-medium">
+                  A confirmation has been sent to <span className="text-[#b82429]">{formData.email}</span>
+                </p>
+                <p className="text-gray-700">
+                  We'll be in touch within 24 hours to discuss your requirements and finalize your quote.
+                </p>
 
-              <div className="pt-6">
-                <Button
-                  onClick={() => router.push("/calculator")}
-                  className="bg-[#b82429] hover:bg-[#9e1f23] text-white py-3 px-6 text-base font-medium rounded-md"
-                >
-                  Return to Calculator
-                </Button>
+                <div className="pt-6">
+                  <Button
+                    onClick={() => router.push("/calculator")}
+                    className="bg-[#b82429] hover:bg-[#9e1f23] text-white py-3 px-6 text-base font-medium rounded-md"
+                  >
+                    Return to Calculator
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -697,13 +701,13 @@ export default function QuoteRequestPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-600 mb-1">
-                          Zip Code <span className="text-red-500">*</span>
+                          Post Code <span className="text-red-500">*</span>
                         </label>
                         <Input
                           required
                           type="text"
-                          name="zip"
-                          value={formData.zip}
+                          name="postCode"
+                          value={formData.postCode}
                           onChange={handleInputChange}
                           className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
                         />
