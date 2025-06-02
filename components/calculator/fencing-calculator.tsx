@@ -389,6 +389,7 @@ const ItemRow = memo(
     increaseQuantity,
     decreaseQuantity,
     resetQuantity,
+    selectedOption,
   }) => {
     return (
       <tr className="border-b border-gray-100">
@@ -398,42 +399,44 @@ const ItemRow = memo(
             <span className="text-gray-800 font-medium">{item.name}</span>
           </div>
         </td>
-        <td className="text-center py-2">
-          {item.category === "services" || item.category === "delivery" ? (
-            <span className="text-gray-900">{item.quantity}</span>
-          ) : (
-            <div className="flex items-center justify-center">
-              <button
-                onClick={() => decreaseQuantity(item.name, item.category)}
-                className="w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-l-md text-gray-900"
-                disabled={getItemQuantity(item) <= 1}
-              >
-                -
-              </button>
-              <span
-                className={`px-2 text-gray-800 font-medium ${hasCustomQuantity(item) ? "text-[#b82429] font-bold" : ""}`}
-              >
-                {getItemQuantity(item)}
-                {hasCustomQuantity(item) && <span className="text-[#b82429] font-bold ml-1 text-sm">*</span>}
-              </span>
-              <button
-                onClick={() => increaseQuantity(item.name, item.category)}
-                className="w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-r-md text-gray-900"
-              >
-                +
-              </button>
-              {hasCustomQuantity(item) && (
+        {selectedOption === "purchase" && (
+          <td className="text-center py-2">
+            {item.category === "services" || item.category === "delivery" ? (
+              <span className="text-gray-900">{item.quantity}</span>
+            ) : (
+              <div className="flex items-center justify-center">
                 <button
-                  onClick={() => resetQuantity(item.name)}
-                  className="ml-2 text-xs text-gray-500 hover:text-gray-700 underline"
-                  title="Reset to default quantity"
+                  onClick={() => decreaseQuantity(item.name, item.category)}
+                  className="w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-l-md text-gray-900"
+                  disabled={getItemQuantity(item) <= 1}
                 >
-                  Reset
+                  -
                 </button>
-              )}
-            </div>
-          )}
-        </td>
+                <span
+                  className={`px-2 text-gray-800 font-medium ${hasCustomQuantity(item) ? "text-[#b82429] font-bold" : ""}`}
+                >
+                  {getItemQuantity(item)}
+                  {hasCustomQuantity(item) && <span className="text-[#b82429] font-bold ml-1 text-sm">*</span>}
+                </span>
+                <button
+                  onClick={() => increaseQuantity(item.name, item.category)}
+                  className="w-6 h-6 flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-r-md text-gray-900"
+                >
+                  +
+                </button>
+                {hasCustomQuantity(item) && (
+                  <button
+                    onClick={() => resetQuantity(item.name)}
+                    className="ml-2 text-xs text-gray-500 hover:text-gray-700 underline"
+                    title="Reset to default quantity"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            )}
+          </td>
+        )}
         <td className="text-right py-2">
           <span className="text-gray-900">
             {item.isTBC ? "TBC" : item.priceDisplay || `$${formatPrice(item.price)}`}
@@ -1479,7 +1482,7 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
 
           <div className="border border-gray-200 rounded-md p-4 mb-6">
             <h3 className="font-heading font-bold text-base mb-4 text-gray-900">Item List:</h3>
-            {Object.keys(customQuantities).length > 0 && (
+            {Object.keys(customQuantities).length > 0 && selectedOption === "purchase" && (
               <div className="mb-4 p-3 bg-[#f8d7d9] border border-[#b82429] rounded-md">
                 <div className="flex items-center text-[#b82429]">
                   <Info size={18} className="mr-2 flex-shrink-0" />
@@ -1511,7 +1514,9 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-2 text-gray-800 text-xs font-bold">Item:</th>
-                    <th className="text-center py-2 text-gray-800 text-xs font-bold">Qty</th>
+                    {selectedOption === "purchase" && (
+                      <th className="text-center py-2 text-gray-800 text-xs font-bold">Qty</th>
+                    )}
                     <th className="text-right py-2 text-gray-800 text-xs font-bold">Price</th>
                   </tr>
                 </thead>
@@ -1529,22 +1534,21 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                         increaseQuantity={increaseQuantity}
                         decreaseQuantity={decreaseQuantity}
                         resetQuantity={resetQuantity}
+                        selectedOption={selectedOption}
                       />
                     ))}
                 </tbody>
                 <tfoot>
                   <tr className="border-t border-gray-200 font-bold">
                     <td className="py-3 text-[#b82429] font-bold text-sm">Total (Incl. GST)</td>
-                    <td></td>
+                    {selectedOption === "purchase" && <td></td>}
                     <td className="text-right py-3 text-[#b82429] font-bold text-sm">${formatPrice(totalPrice)}</td>
                   </tr>
                 </tfoot>
-                {Object.keys(customQuantities).length > 0 && (
-                  <>
-                    <caption className="mt-3 text-sm font-medium text-[#b82429] text-left flex items-center">
-                      <Info size={16} className="mr-2" />* Custom quantities have been manually adjusted
-                    </caption>
-                  </>
+                {Object.keys(customQuantities).length > 0 && selectedOption === "purchase" && (
+                  <caption className="mt-3 text-sm font-medium text-[#b82429] text-left flex items-center">
+                    <Info size={16} className="mr-2" />* Custom quantities have been manually adjusted
+                  </caption>
                 )}
               </table>
             </div>
