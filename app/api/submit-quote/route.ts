@@ -118,6 +118,11 @@ function formatQuoteSummary(data) {
     totalPrice,
   } = data.quoteDetails
 
+  // Format price with commas for thousands
+  const formatPrice = (price) => {
+    return price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+  }
+
   let summary = `Option: ${selectedOption === "purchase" ? "Purchase" : "Hire"}\n`
   summary += `Fence Type: ${getFenceTypeTag(selectedFenceType)}\n`
 
@@ -137,7 +142,7 @@ function formatQuoteSummary(data) {
     summary += `Duration: ${hireDuration} ${durationUnit}\n`
   }
 
-  summary += `Total Price: $${totalPrice.toFixed(2)}`
+  summary += `Total Price: $${formatPrice(totalPrice)}`
 
   // Add user's special requirements if any
   if (data.specialRequirements || data.message) {
@@ -235,10 +240,11 @@ export async function POST(request: Request) {
     // Format items for notes (keeping the detailed items list)
     const itemsText = data.quoteDetails.items
       .filter((item) => !item.name.includes("Hire Duration") && !item.name.includes("Discount:"))
-      .map(
-        (item) =>
-          `- ${item.name}: ${item.quantity} x ${item.priceDisplay || `$${(item.price / item.quantity).toFixed(2)}`}`,
-      )
+      .map((item) => {
+        const unitPrice = item.price / item.quantity
+        const formattedUnitPrice = unitPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        return `- ${item.name}: ${item.quantity} x ${item.priceDisplay || `$${formattedUnitPrice}`}`
+      })
       .join("\n")
 
     // Build tags array using only specified tags
