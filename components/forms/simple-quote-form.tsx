@@ -154,6 +154,7 @@ export default function SimpleQuoteForm({
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required"
     }
+    // Removed restrictive phone validation
 
     if (!formData.address?.trim()) {
       newErrors.address = "Site location/address is required"

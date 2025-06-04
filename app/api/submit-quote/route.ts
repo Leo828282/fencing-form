@@ -1,5 +1,28 @@
 import { NextResponse } from "next/server"
 
+// Helper function to format Australian phone numbers
+function formatAustralianPhone(phone) {
+  if (!phone) return phone
+
+  // Remove all spaces, dashes, parentheses, and other non-digit characters except +
+  let cleanPhone = phone.replace(/[^\d+]/g, "")
+
+  // If it starts with 0 (Australian mobile/landline), convert to international format
+  if (cleanPhone.startsWith("0")) {
+    cleanPhone = "+61" + cleanPhone.substring(1)
+  }
+  // If it already starts with +61, keep as is
+  else if (cleanPhone.startsWith("+61")) {
+    // Already in international format, keep as is
+  }
+  // If it starts with 61 (without +), add the +
+  else if (cleanPhone.startsWith("61") && cleanPhone.length >= 10) {
+    cleanPhone = "+" + cleanPhone
+  }
+
+  return cleanPhone
+}
+
 // Helper function to get distance range tag
 function getDistanceRangeTag(meters) {
   const distance = Number.parseInt(meters)
@@ -88,6 +111,11 @@ export async function POST(request: Request) {
     // Parse the request body
     const data = await request.json()
 
+    // Format Australian phone number before validation
+    if (data.phone) {
+      data.phone = formatAustralianPhone(data.phone)
+    }
+
     // Log the received data for debugging
     console.log("Quote form submission received:", JSON.stringify(data, null, 2))
 
@@ -102,8 +130,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, error: "Invalid email format" }, { status: 400 })
     }
 
-    // Validate phone format (basic check)
-    const phoneRegex = /^[0-9\s+\-$$$$]{8,15}$/
+    // Validate phone format (basic check) - updated to be less restrictive
+    const phoneRegex = /^[\d\s+\-()]{8,20}$/
     if (!phoneRegex.test(data.phone)) {
       return NextResponse.json({ success: false, error: "Invalid phone number format" }, { status: 400 })
     }

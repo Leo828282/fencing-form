@@ -48,10 +48,10 @@ export default function QuoteRequestPage() {
     itemsList: [],
     totalPrice: 0,
     selectedOption: "purchase",
+    selectedFenceType: "builders",
     metersRequired: "10",
     hireDuration: "1",
     durationUnit: "weeks",
-    selectedFenceType: "builders",
     selectedFeetOption: "feet",
   })
   const [dataLoaded, setDataLoaded] = useState(false)
@@ -188,10 +188,9 @@ export default function QuoteRequestPage() {
       return false
     }
 
-    // Basic phone validation (numbers only)
-    const phoneRegex = /^[0-9]+$/
-    if (!phoneRegex.test(formData.phone)) {
-      alert("Please enter a valid phone number (numbers only).")
+    // Removed restrictive phone validation - just check if it exists
+    if (!formData.phone.trim()) {
+      alert("Please enter a phone number.")
       return false
     }
 
