@@ -173,7 +173,8 @@ export default function QuoteRequestPage() {
       !formData.address ||
       !formData.city ||
       !formData.state ||
-      !formData.postCode
+      !formData.postCode ||
+      !formData.company
       // Removed termsAccepted check
     ) {
       alert("Please fill in all required fields.")
@@ -628,13 +629,17 @@ export default function QuoteRequestPage() {
                     </div>
 
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-600 mb-1">Company</label>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">
+                        Business Name <span className="text-red-500">*</span>
+                      </label>
                       <Input
+                        required
                         type="text"
                         name="company"
                         value={formData.company}
                         onChange={handleInputChange}
                         className="border-2 border-gray-300 rounded-md h-10 w-full bg-white focus:border-[#b82429] focus:ring-1 focus:ring-[#b82429] focus:outline-none"
+                        placeholder="Business Name"
                       />
                     </div>
                   </div>

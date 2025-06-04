@@ -167,6 +167,10 @@ export default function SimpleQuoteForm({
       newErrors.postalCode = "Postal code is required"
     }
 
+    if (!formData.businessName.trim()) {
+      newErrors.businessName = "Business name is required"
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -495,14 +499,24 @@ export default function SimpleQuoteForm({
                     </div>
 
                     <div>
-                      <label className="block text-sm mb-2 text-[#cccccc] font-medium">Business Name</label>
+                      <label className="block text-sm mb-2 text-[#cccccc] font-medium">
+                        Business Name <span className="text-[#B82429]">*</span>
+                      </label>
                       <Input
                         name="businessName"
                         value={formData.businessName}
                         onChange={handleChange}
-                        className="bg-[#252525] border-[#333333] text-white h-14 focus:border-[#B82429] focus:ring-[#B82429] transition-all"
+                        className={`bg-[#252525] border-[#333333] text-white h-14 focus:border-[#B82429] focus:ring-[#B82429] transition-all ${
+                          errors.businessName ? "border-[#B82429]" : ""
+                        }`}
                         placeholder="Business Name"
                       />
+                      {errors.businessName && (
+                        <p className="text-[#B82429] text-xs mt-1 flex items-center">
+                          <span className="w-1 h-3 bg-[#B82429] rounded-full mr-1.5"></span>
+                          {errors.businessName}
+                        </p>
+                      )}
                     </div>
 
                     <div>

@@ -92,7 +92,7 @@ export async function POST(request: Request) {
     console.log("Quote form submission received:", JSON.stringify(data, null, 2))
 
     // Validate required fields
-    if (!data.firstName || !data.lastName || !data.email || !data.phone) {
+    if (!data.firstName || !data.lastName || !data.email || !data.phone || !data.businessName) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 })
     }
 
