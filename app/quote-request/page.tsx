@@ -25,7 +25,6 @@ import { FenceIcon } from "@/components/icons/fence-icon"
 import Link from "next/link"
 
 export default function QuoteRequestPage() {
-  // Existing state and functions...
   const router = useRouter()
   const searchParams = useSearchParams()
   const dataFetchedRef = useRef(false)
@@ -56,9 +55,7 @@ export default function QuoteRequestPage() {
   })
   const [dataLoaded, setDataLoaded] = useState(false)
   const [dataError, setDataError] = useState(false)
-  // Removed termsAccepted state
 
-  // All the existing useEffect hooks and functions...
   // Load quote details from URL params - only run once
   useEffect(() => {
     // If we've already fetched the data, don't do it again
@@ -175,7 +172,6 @@ export default function QuoteRequestPage() {
       !formData.state ||
       !formData.postCode ||
       !formData.company
-      // Removed termsAccepted check
     ) {
       alert("Please fill in all required fields.")
       return false
@@ -224,17 +220,33 @@ export default function QuoteRequestPage() {
 
       console.log("Submitting data:", submissionData) // Debug log
 
-      // Simulate API call (replace with actual API call)
-      await new Promise((resolve) => setTimeout(resolve, 1500))
+      // Submit to API route
+      const response = await fetch("/api/submit-quote", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(submissionData),
+      })
 
-      // Show success message
-      setIsSubmitting(false)
-      setShowSuccess(true)
+      const result = await response.json()
 
-      // Redirect back to calculator after showing success message
-      setTimeout(() => {
-        router.push("/calculator")
-      }, 2000)
+      if (!response.ok) {
+        throw new Error(result.error || `Error: ${response.status}`)
+      }
+
+      if (result.success) {
+        // Show success message
+        setIsSubmitting(false)
+        setShowSuccess(true)
+
+        // Redirect back to calculator after showing success message
+        setTimeout(() => {
+          router.push("/calculator")
+        }, 2000)
+      } else {
+        throw new Error(result.error || "Unknown error")
+      }
     } catch (error) {
       console.error("Error submitting form:", error)
       alert(`There was an error submitting your form: ${error.message || "Unknown error"}`)

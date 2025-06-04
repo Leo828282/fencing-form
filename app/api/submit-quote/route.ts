@@ -166,7 +166,7 @@ export async function POST(request: Request) {
     console.log("Quote form submission received:", JSON.stringify(data, null, 2))
 
     // Validate required fields
-    if (!data.firstName || !data.lastName || !data.email || !data.phone || !data.businessName) {
+    if (!data.firstName || !data.lastName || !data.email || !data.phone || !data.company) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 })
     }
 
@@ -194,11 +194,10 @@ export async function POST(request: Request) {
     }
 
     // Get the webhook URL
-    const WEBHOOK_URL =
-      process.env.CDV_WEBHOOK_URL ||
-      "https://services.leadconnectorhq.com/hooks/K6IXtrByTpRfuWTrjizN/webhook-trigger/4ce7fd0e-c2e5-4ef1-8b11-ee0dc547d1df"
+    const WEBHOOK_URL = process.env.CDV_WEBHOOK_URL
 
     if (!WEBHOOK_URL) {
+      console.error("Webhook URL is not configured in environment variables")
       return NextResponse.json({ success: false, error: "Webhook URL is not configured" }, { status: 500 })
     }
 
@@ -238,14 +237,15 @@ export async function POST(request: Request) {
           : ""
 
     // Format items for notes (keeping the detailed items list)
-    const itemsText = data.quoteDetails.items
-      .filter((item) => !item.name.includes("Hire Duration") && !item.name.includes("Discount:"))
-      .map((item) => {
-        const unitPrice = item.price / item.quantity
-        const formattedUnitPrice = unitPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-        return `- ${item.name}: ${item.quantity} x ${item.priceDisplay || `$${formattedUnitPrice}`}`
-      })
-      .join("\n")
+    const itemsText =
+      data.quoteDetails.items
+        ?.filter((item) => !item.name.includes("Hire Duration") && !item.name.includes("Discount:"))
+        .map((item) => {
+          const unitPrice = item.price / item.quantity
+          const formattedUnitPrice = unitPrice.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+          return `- ${item.name}: ${item.quantity} x ${item.priceDisplay || `$${formattedUnitPrice}`}`
+        })
+        .join("\n") || ""
 
     // Build tags array using only specified tags
     const tags = [
@@ -272,10 +272,11 @@ export async function POST(request: Request) {
       lastName: data.lastName, // {{inboundWebhookRequest.lastName}}
       email: data.email, // {{inboundWebhookRequest.email}}
       phone: data.phone, // {{inboundWebhookRequest.phone}}
-      companyName: data.businessName || data.company || "", // {{inboundWebhookRequest.companyName}}
+      companyName: data.company, // {{inboundWebhookRequest.companyName}}
       address1: data.address, // {{inboundWebhookRequest.address1}}
+      city: data.city, // {{inboundWebhookRequest.city}}
       state: data.state, // {{inboundWebhookRequest.state}}
-      postalCode: data.postalCode || data.zip || "", // {{inboundWebhookRequest.postalCode}}
+      postalCode: data.postCode, // {{inboundWebhookRequest.postalCode}}
       source: "Calculator Enquiry", // {{inboundWebhookRequest.source}}
 
       // Quote details - matching your field names exactly
@@ -294,7 +295,6 @@ export async function POST(request: Request) {
 
       // Additional fields for completeness
       country: "Australia",
-      city: data.city || "",
       distance_range: distanceRangeTag,
       duration_range: durationRangeTag || "",
       items_list: itemsText,
