@@ -17,7 +17,7 @@ const sliderStyles = `
     border-radius: 9999px;
     margin: 1rem 0;
   }
-
+  
   .slider-fill {
     position: absolute;
     top: 0;
@@ -25,38 +25,6 @@ const sliderStyles = `
     height: 100%;
     background-color: #b82429;
     border-radius: 9999px;
-  }
-
-  .slider-thumb {
-    position: absolute;
-    top: 50%;
-    width: 20px;
-    height: 20px;
-    background-color: #b82429;
-    border: 3px solid white;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    transition: all 0.2s ease;
-    pointer-events: none;
-  }
-
-  .slider-thumb:hover {
-    transform: translate(-50%, -50%) scale(1.1);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  }
-
-  .slider-input {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 32px;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 10;
-    margin-top: -12px;
   }
 `
 
@@ -1414,10 +1382,13 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                     const value = Number.parseInt(e.target.value)
                     setMetersRequired(value)
                   }}
-                  className="slider-input"
+                  className="w-full absolute top-0 left-0 opacity-0 h-8 cursor-pointer z-10 -mt-3"
                   aria-label="Meters of fencing"
                 />
-                <div className="slider-thumb" style={{ left: `${((metersRequired - 1) / 799) * 100}%` }}></div>
+                <div
+                  className="absolute top-0 w-5 h-5 bg-[#b82429] rounded-full -mt-1.5 transform -translate-x-1/2 pointer-events-none"
+                  style={{ left: `${((metersRequired - 1) / 799) * 100}%` }}
+                ></div>
               </div>
               <div className="flex justify-between text-xs text-gray-500 mt-1">
                 <span>1m</span>
@@ -1484,11 +1455,11 @@ export default function FencingCalculator({ onUpdate, onBookingRequest }) {
                       const value = Number.parseInt(e.target.value)
                       setHireDuration(value)
                     }}
-                    className="slider-input"
+                    className="w-full absolute top-0 left-0 opacity-0 h-8 cursor-pointer z-10 -mt-3"
                     aria-label="Hire duration"
                   />
                   <div
-                    className="slider-thumb"
+                    className="absolute top-0 w-5 h-5 bg-[#b82429] rounded-full -mt-1.5 transform -translate-x-1/2 pointer-events-none"
                     style={{
                       left: `${((hireDuration - getMinimumDuration(durationUnit)) / (getMaxDuration() - getMinimumDuration(durationUnit))) * 100}%`,
                     }}
