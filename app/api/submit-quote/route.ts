@@ -305,27 +305,47 @@ export async function POST(request: Request) {
 
     // Submit to webhook
     try {
+      console.log("=== WEBHOOK SUBMISSION DEBUG ===")
+      console.log("Webhook URL:", WEBHOOK_URL)
+      console.log("Payload being sent:", JSON.stringify(webhookData, null, 2))
+      console.log("Payload size:", JSON.stringify(webhookData).length, "bytes")
+      console.log("================================")
+
       const webhookResponse = await fetch(WEBHOOK_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Accept: "application/json",
         },
         body: JSON.stringify(webhookData),
+        signal: AbortSignal.timeout(30000), // 30 second timeout
       })
 
       console.log("Webhook response status:", webhookResponse.status)
-      console.log("Webhook payload sent:", JSON.stringify(webhookData, null, 2))
+      console.log("Webhook response headers:", Object.fromEntries(webhookResponse.headers.entries()))
+
+      const responseText = await webhookResponse.text()
+      console.log("Webhook response body:", responseText)
 
       if (!webhookResponse.ok) {
-        const errorText = await webhookResponse.text()
-        console.error("Webhook error:", errorText)
+        console.error("Webhook failed with status:", webhookResponse.status)
+        console.error("Webhook error response:", responseText)
         return NextResponse.json(
           {
             success: false,
-            error: `Error submitting to CRM: ${webhookResponse.status}`,
+            error: `Error submitting to CRM: ${webhookResponse.status} - ${responseText}`,
           },
           { status: 500 },
         )
+      }
+
+      // Try to parse response as JSON if possible
+      let responseData
+      try {
+        responseData = JSON.parse(responseText)
+        console.log("Webhook response JSON:", responseData)
+      } catch (e) {
+        console.log("Webhook response is not JSON:", responseText)
       }
 
       // Return success response
@@ -333,10 +353,15 @@ export async function POST(request: Request) {
         success: true,
         message: "Quote request received successfully!",
         reference: `CALC-${Date.now().toString().substring(5)}`,
-        tags: tags, // Return tags for debugging
+        tags: tags,
+        webhookResponse: responseData || responseText, // Include webhook response for debugging
       })
     } catch (webhookError) {
       console.error("Error submitting to webhook:", webhookError)
+      console.error("Webhook error details:", {
+        message: (webhookError as Error).message,
+        stack: (webhookError as Error).stack,
+      })
       return NextResponse.json(
         {
           success: false,
