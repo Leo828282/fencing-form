@@ -106,6 +106,47 @@ function getFenceTypeTag(fenceType) {
   }
 }
 
+// Helper function to format quote summary for notes
+function formatQuoteSummary(data) {
+  const {
+    selectedOption,
+    selectedFenceType,
+    selectedFeetOption,
+    metersRequired,
+    hireDuration,
+    durationUnit,
+    totalPrice,
+  } = data.quoteDetails
+
+  let summary = `Option: ${selectedOption === "purchase" ? "Purchase" : "Hire"}\n`
+  summary += `Fence Type: ${getFenceTypeTag(selectedFenceType)}\n`
+
+  // Map feet option to display name
+  const feetOptionName =
+    selectedFeetOption === "feet"
+      ? "Premium Plastic Temporary Fencing Feet"
+      : selectedFeetOption === "hookStay"
+        ? "Hook Stay"
+        : selectedFeetOption
+
+  summary += `Feet Option: ${feetOptionName}\n`
+  summary += `Meters Required: ${metersRequired}\n`
+
+  // Only add duration for hire quotes
+  if (selectedOption === "hire" && hireDuration && durationUnit) {
+    summary += `Duration: ${hireDuration} ${durationUnit}\n`
+  }
+
+  summary += `Total Price: $${totalPrice.toFixed(2)}`
+
+  // Add user's special requirements if any
+  if (data.specialRequirements || data.message) {
+    summary += `\n\nSpecial Requirements:\n${data.specialRequirements || data.message}`
+  }
+
+  return summary
+}
+
 export async function POST(request: Request) {
   try {
     // Parse the request body
@@ -191,7 +232,7 @@ export async function POST(request: Request) {
           ? "Hook Stay"
           : ""
 
-    // Format items for notes
+    // Format items for notes (keeping the detailed items list)
     const itemsText = data.quoteDetails.items
       .filter((item) => !item.name.includes("Hire Duration") && !item.name.includes("Discount:"))
       .map(
@@ -215,48 +256,43 @@ export async function POST(request: Request) {
       tags.push(durationRangeTag) // 1–4 weeks, 5–8 weeks, etc.
     }
 
-    // Prepare the data for webhook
+    // Create formatted quote summary for notes
+    const quoteSummary = formatQuoteSummary(data)
+
+    // Prepare the data for webhook - MATCHING YOUR GHL FIELD MAPPINGS EXACTLY
     const webhookData = {
-      // Contact information
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      phone: data.phone,
-      companyName: data.businessName || data.company || "",
-      address1: data.address,
-      city: data.city || "",
-      state: data.state,
-      postalCode: data.postalCode || data.zip,
+      // Contact information - matching your field names exactly
+      firstName: data.firstName, // {{inboundWebhookRequest.firstName}}
+      lastName: data.lastName, // {{inboundWebhookRequest.lastName}}
+      email: data.email, // {{inboundWebhookRequest.email}}
+      phone: data.phone, // {{inboundWebhookRequest.phone}}
+      companyName: data.businessName || data.company || "", // {{inboundWebhookRequest.companyName}}
+      address1: data.address, // {{inboundWebhookRequest.address1}}
+      state: data.state, // {{inboundWebhookRequest.state}}
+      postalCode: data.postalCode || data.zip || "", // {{inboundWebhookRequest.postalCode}}
+      source: "Calculator Enquiry", // {{inboundWebhookRequest.source}}
+
+      // Quote details - matching your field names exactly
+      quote_type: data.quoteDetails.selectedOption, // {{inboundWebhookRequest.quote_type}}
+      fence_panel_type: fenceTypeTag, // {{inboundWebhookRequest.fence_panel_type}}
+      feet_option: feetOptionName, // {{inboundWebhookRequest.feet_option}}
+      fencing_meters_required: data.quoteDetails.metersRequired.toString(), // {{inboundWebhookRequest.fencing_meters_required}}
+      hire_duration: data.quoteDetails.hireDuration?.toString() || "", // {{inboundWebhookRequest.hire_duration}}
+      duration_unit: data.quoteDetails.durationUnit || "", // {{inboundWebhookRequest.duration_unit}}
+      total_price: data.quoteDetails.totalPrice.toString(), // {{inboundWebhookRequest.total_price}}
+      number_of_panels: numPanels.toString(), // {{inboundWebhookRequest.number_of_panels}}
+      number_of_clamps: numClamps.toString(), // {{inboundWebhookRequest.number_of_clamps}}
+      number_of_feet: numFeet.toString(), // {{inboundWebhookRequest.number_of_feet}}
+      number_of_braces: numBraces.toString(), // {{inboundWebhookRequest.number_of_braces}}
+      notes: quoteSummary, // {{inboundWebhookRequest.notes}} - Now contains formatted quote summary
+
+      // Additional fields for completeness
       country: "Australia",
-      source: "Calculator Enquiry",
-
-      // Quote details
-      quote_type: data.quoteDetails.selectedOption,
-      fence_panel_type: fenceTypeTag,
-      feet_option: feetOptionName,
-      fencing_meters_required: data.quoteDetails.metersRequired.toString(),
+      city: data.city || "",
       distance_range: distanceRangeTag,
-      number_of_panels: numPanels.toString(),
-      number_of_feet: numFeet.toString(),
-      number_of_clamps: numClamps.toString(),
-      number_of_braces: numBraces.toString(),
-      hire_duration: data.quoteDetails.hireDuration?.toString() || "",
-      duration_unit: data.quoteDetails.durationUnit || "",
       duration_range: durationRangeTag || "",
-      total_price: data.quoteDetails.totalPrice.toString(),
-      notes: data.specialRequirements || data.message || "",
-
-      // Include the items list in notes
       items_list: itemsText,
-
-      // Use only specified tags
       tags: tags,
-
-      // Site location details
-      site_location_address: data.address,
-      site_location_state: data.state,
-
-      // Additional tracking fields
       enquiry_type: "Multi Form Enquiry",
       lead_source_detail: "Calculator Enquiry",
     }
@@ -272,7 +308,7 @@ export async function POST(request: Request) {
       })
 
       console.log("Webhook response status:", webhookResponse.status)
-      console.log("Webhook payload tags:", tags)
+      console.log("Webhook payload sent:", JSON.stringify(webhookData, null, 2))
 
       if (!webhookResponse.ok) {
         const errorText = await webhookResponse.text()
