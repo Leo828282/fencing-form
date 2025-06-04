@@ -96,7 +96,7 @@ function getFenceTypeTag(fenceType) {
     case "premium":
       return "Premium Grade Heavy Duty"
     case "builders":
-      return "Builder's Temporary Smart Duty"
+      return "Builders Temporary Smart Duty"
     case "pool":
       return "Temporary Fence Pool Panels"
     case "crowd":
